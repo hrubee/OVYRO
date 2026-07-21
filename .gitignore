@@ -19,3 +19,10 @@ dist/
 
 # Local Claude Code settings
 .claude/settings.local.json
+
+# TypeScript / Next
+next-env.d.ts
+*.tsbuildinfo
+
+# Sentry
+.sentryclirc
