@@ -1,13 +1,29 @@
 import type { Metadata } from "next";
-import { PlaceholderPage } from "@/components/placeholder-page";
+import Link from "next/link";
+import { Suspense } from "react";
+import { AuthShell } from "../_components/auth-shell";
+import { LoginForm } from "../_components/login-form";
 
 export const metadata: Metadata = { title: "Log in" };
 
 export default function LoginPage() {
   return (
-    <PlaceholderPage
+    <AuthShell
       title="Log in"
-      description="Email/password, email OTP, and Google sign-in are wired up with Better Auth in a later phase."
-    />
+      description="Sign in with your password, or have a one-time code emailed to you."
+      footer={
+        <>
+          New to Ovyro?{" "}
+          <Link href="/register" className="underline underline-offset-4">
+            Create an account
+          </Link>
+        </>
+      }
+    >
+      {/* LoginForm reads `?next=`, so it needs a Suspense boundary. */}
+      <Suspense fallback={null}>
+        <LoginForm />
+      </Suspense>
+    </AuthShell>
   );
 }
