@@ -17,6 +17,9 @@ dist/
 # OS
 .DS_Store
 
+# Local Redis snapshot, written to cwd when redis-server is run from the repo root
+dump.rdb
+
 # Local Claude Code settings
 .claude/settings.local.json
 
