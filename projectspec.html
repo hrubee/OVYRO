@@ -1,0 +1,1265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ovyro — Land Marketplace Platform: Project Specification</title>
+<style>
+:root{
+  --ink:#1c2733; --muted:#5b6b7a; --accent:#1f6f54; --accent-soft:#e8f3ee;
+  --line:#e3e8ed; --bg:#ffffff; --code-bg:#f5f7f9; --warn:#fff8ec;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Segoe UI',system-ui,-apple-system,'Helvetica Neue',Arial,sans-serif;
+  color:var(--ink); background:var(--bg); margin:0;
+  line-height:1.65; font-size:16px;
+}
+.wrap{max-width:920px;margin:0 auto;padding:48px 32px 96px}
+header.doc{
+  border-bottom:3px solid var(--accent); padding-bottom:24px; margin-bottom:40px;
+}
+header.doc h1{font-size:2.1rem;margin:0 0 8px;letter-spacing:-.02em}
+header.doc .meta{color:var(--muted);font-size:.95rem}
+header.doc .meta strong{color:var(--ink)}
+h1,h2,h3,h4{line-height:1.25;font-weight:650}
+h2{
+  font-size:1.5rem;margin:56px 0 16px;padding-top:20px;
+  border-top:1px solid var(--line);color:var(--accent);
+}
+h3{font-size:1.15rem;margin:32px 0 10px}
+h4{font-size:1rem;margin:24px 0 8px}
+p{margin:0 0 14px}
+a{color:var(--accent)}
+strong{font-weight:650}
+ul,ol{margin:0 0 16px;padding-left:26px}
+li{margin-bottom:6px}
+table{
+  border-collapse:collapse;width:100%;margin:18px 0 24px;font-size:.92rem;
+}
+th,td{border:1px solid var(--line);padding:8px 12px;text-align:left;vertical-align:top}
+th{background:var(--accent-soft);font-weight:650}
+tr:nth-child(even) td{background:#fafbfc}
+code{
+  font-family:'Cascadia Code',ui-monospace,Consolas,Menlo,monospace;
+  background:var(--code-bg);padding:2px 5px;border-radius:4px;font-size:.88em;
+}
+pre{
+  background:var(--code-bg);border:1px solid var(--line);border-radius:8px;
+  padding:16px 18px;overflow-x:auto;margin:16px 0 24px;line-height:1.5;
+}
+pre code{background:none;padding:0;font-size:.85rem}
+hr{border:none;border-top:1px solid var(--line);margin:40px 0}
+blockquote{
+  margin:16px 0;padding:10px 18px;border-left:4px solid var(--accent);
+  background:var(--accent-soft);border-radius:0 6px 6px 0;color:var(--ink);
+}
+input[type=checkbox]{margin-right:8px;accent-color:var(--accent)}
+nav.toc{
+  background:var(--code-bg);border:1px solid var(--line);border-radius:10px;
+  padding:20px 26px;margin:0 0 8px;
+}
+nav.toc h2{border:none;margin:0 0 10px;padding:0;font-size:1.05rem;color:var(--ink)}
+nav.toc ol{margin:0;padding-left:22px;columns:2;column-gap:36px;font-size:.93rem}
+nav.toc li{margin-bottom:4px;break-inside:avoid}
+nav.toc a{text-decoration:none}
+nav.toc a:hover{text-decoration:underline}
+@media(max-width:640px){nav.toc ol{columns:1}.wrap{padding:28px 18px 64px}}
+@media print{
+  .wrap{max-width:100%;padding:0}
+  h2{break-after:avoid}
+  table,pre{break-inside:avoid}
+}
+
+
+figure.diagram{margin:28px 0 32px;padding:22px 18px 14px;border:1px solid var(--line);border-radius:12px;background:#fff}
+figure.diagram svg{width:100%;height:auto;display:block}
+figure.diagram figcaption{margin-top:12px;font-size:.86rem;color:var(--muted);text-align:center;line-height:1.5}
+@media print{figure.diagram{break-inside:avoid}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="doc">
+  <h1>Ovyro — Land Marketplace Platform</h1>
+  <div class="meta">Project Specification &nbsp;·&nbsp; <strong>Version 1.0</strong> (Draft for build) &nbsp;·&nbsp; Deployment: <strong>Railway</strong> &nbsp;·&nbsp; Builder: <strong>Claude Code / dev team</strong><br>
+  Business model: <strong>Lead generation</strong> — Ovyro connects buyers to sellers and routes leads to the listing owner.</div>
+</header>
+<nav class="toc">
+<h2>Contents</h2>
+
+<ol>
+<li><a href="#ovyro--land-marketplace-platform-project-specification"
+id="toc-ovyro--land-marketplace-platform-project-specification">Ovyro —
+Land Marketplace Platform: Project Specification</a>
+<ol>
+<li><a href="#1-executive-summary" id="toc-1-executive-summary">1.
+Executive Summary</a></li>
+<li><a href="#2-assumptions--open-questions"
+id="toc-2-assumptions--open-questions">2. Assumptions &amp; Open
+Questions</a></li>
+<li><a href="#3-roles--permission-model"
+id="toc-3-roles--permission-model">3. Roles &amp; Permission
+Model</a></li>
+<li><a href="#4-feature-specification-by-view"
+id="toc-4-feature-specification-by-view">4. Feature Specification by
+View</a></li>
+<li><a href="#5-meta-ads--pixel-integration-deep-dive"
+id="toc-5-meta-ads--pixel-integration-deep-dive">5. Meta Ads / Pixel
+Integration (Deep Dive)</a></li>
+<li><a href="#6-data-model-postgresql"
+id="toc-6-data-model-postgresql">6. Data Model (PostgreSQL)</a></li>
+<li><a href="#7-api-surface-app-router-route-handlers--server-actions"
+id="toc-7-api-surface-app-router-route-handlers--server-actions">7. API
+Surface (App Router route handlers / server actions)</a></li>
+<li><a href="#8-tech-stack--architecture"
+id="toc-8-tech-stack--architecture">8. Tech Stack &amp;
+Architecture</a></li>
+<li><a href="#9-notifications" id="toc-9-notifications">9.
+Notifications</a></li>
+<li><a href="#10-analytics-implementation-admin-view"
+id="toc-10-analytics-implementation-admin-view">10. Analytics
+Implementation (Admin View)</a></li>
+<li><a href="#11-risks-edge-cases--mitigations"
+id="toc-11-risks-edge-cases--mitigations">11. Risks, Edge Cases &amp;
+Mitigations</a></li>
+<li><a href="#12-non-functional-requirements"
+id="toc-12-non-functional-requirements">12. Non-Functional
+Requirements</a></li>
+<li><a href="#13-build-plan-phased-ordered-for-claude-code"
+id="toc-13-build-plan-phased-ordered-for-claude-code">13. Build Plan
+(Phased, ordered for Claude Code)</a></li>
+<li><a href="#14-v1-acceptance-checklist"
+id="toc-14-v1-acceptance-checklist">14. v1 Acceptance Checklist</a></li>
+</ol></li>
+</ol>
+
+</nav>
+
+
+
+
+
+<hr />
+<h2 id="1-executive-summary">1. Executive Summary</h2>
+<p>Ovyro is a marketplace for land-only real estate. Landowners
+(sellers) list parcels with photos, videos, and pricing. Investors
+(buyers) browse listings, save them to custom lists, and submit
+negotiation/inquiry forms. Every inquiry becomes a <strong>lead</strong>
+delivered to the seller who owns that listing. Sellers can connect their
+<strong>Meta (Facebook) Ads account and Pixel</strong> so that Ovyro's
+listing landing pages fire <em>their</em> pixel and send conversion
+events back to <em>their</em> ad account — letting each seller run their
+own Meta ad campaigns pointing at their Ovyro listing page.</p>
+<p>Three surfaces:</p>
+<ol type="1">
+<li><strong>Admin (Platform Owner) view</strong> — full business
+analytics: buyer counts, seller counts, Meta-connected sellers,
+listings, leads, funnel health, moderation tools.</li>
+<li><strong>Buyer (Consumer) view</strong> — browse/search listings,
+inquire/negotiate, profile, saved custom lists ("like" button), history
+of inquiries, and an opt-in path to become a seller.</li>
+<li><strong>Seller view</strong> — everything a buyer can do,
+<strong>plus</strong> listing management (photos/videos/details), a lead
+inbox, and Meta Ads/Pixel connection.</li>
+</ol>
+<p><strong>Role hierarchy rule (explicit requirement):</strong> Seller ⊇
+Buyer. A user who signs up as a seller automatically has the full buyer
+experience. A buyer does <em>not</em> get seller capabilities by default
+— they must complete a seller onboarding flow to upgrade.</p>
+<hr />
+<figure class="diagram"><svg viewBox="0 0 900 300" role="img" aria-label="Ovyro core loop"><defs><marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#5b6b7a"/></marker></defs><rect x="20" y="90" width="160" height="90" rx="10" fill="#e8f3ee" stroke="#1f6f54" stroke-width="1.5"/><text x="100.0" y="112" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="14" font-weight="650" fill="#1c2733">SELLER</text><text x="100.0" y="130" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="12" fill="#5b6b7a">Lists land parcel</text><text x="100.0" y="146" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="12" fill="#5b6b7a">photos · videos · price</text><rect x="250" y="90" width="190" height="90" rx="10" fill="#fff" stroke="#c8d2da" stroke-width="1.5"/><text x="345.0" y="112" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="14" font-weight="650" fill="#1c2733">OVYRO LISTING PAGE</text><text x="345.0" y="130" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="12" fill="#5b6b7a">public · SEO-ready</text><text x="345.0" y="146" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="12" fill="#5b6b7a">seller&#39;s Meta Pixel fires</text><rect x="510" y="90" width="160" height="90" rx="10" fill="#e9f1fb" stroke="#1d5fa7" stroke-width="1.5"/><text x="590.0" y="112" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="14" font-weight="650" fill="#1c2733">BUYER / INVESTOR</text><text x="590.0" y="130" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="12" fill="#5b6b7a">browses &amp; filters</text><text x="590.0" y="146" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="12" fill="#5b6b7a">saves to custom lists</text><rect x="720" y="90" width="160" height="90" rx="10" fill="#fff" stroke="#c8d2da" stroke-width="1.5"/><text x="800.0" y="112" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="14" font-weight="650" fill="#1c2733">INQUIRY FORM</text><text x="800.0" y="130" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="12" fill="#5b6b7a">offer + message</text><text x="800.0" y="146" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="12" fill="#5b6b7a">phone OTP verified</text><line x1="180" y1="135" x2="248" y2="135" stroke="#5b6b7a" stroke-width="1.6" marker-end="url(#arr)"/><text x="214.0" y="129.0" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="11.5" fill="#5b6b7a">creates</text><line x1="510" y1="135" x2="442" y2="135" stroke="#5b6b7a" stroke-width="1.6" marker-end="url(#arr)"/><text x="476.0" y="129.0" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="11.5" fill="#5b6b7a">views</text><line x1="670" y1="135" x2="718" y2="135" stroke="#5b6b7a" stroke-width="1.6" marker-end="url(#arr)"/><text x="694.0" y="129.0" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="11.5" fill="#5b6b7a">submits</text><rect x="330" y="220" width="240" height="60" rx="10" fill="#fff4e0" stroke="#b45309" stroke-width="1.5"/><text x="450.0" y="242" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="14" font-weight="650" fill="#1c2733">LEAD</text><text x="450.0" y="260" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="12" fill="#5b6b7a">delivered instantly: email + inbox</text><line x1="800" y1="182" x2="800" y2="250" stroke="#5b6b7a" stroke-width="1.6" marker-end="url(#arr)"/><line x1="800" y1="250" x2="572" y2="250" stroke="#5b6b7a" stroke-width="1.6"/><line x1="330" y1="250" x2="100" y2="250" stroke="#5b6b7a" stroke-width="1.6" marker-end="url(#arr)"/><line x1="100" y1="250" x2="100" y2="184" stroke="#5b6b7a" stroke-width="1.6" marker-end="url(#arr)"/><text x="215" y="242" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="11.5" fill="#5b6b7a">lead routed to listing owner</text><rect x="280" y="12" width="340" height="44" rx="10" fill="#fff" stroke="#1d5fa7" stroke-width="1.5"/><text x="450.0" y="39.0" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="13" font-weight="650" fill="#1d5fa7">Seller&#39;s Meta Ads &#8594; drive traffic to their listing page</text><line x1="345" y1="90" x2="345" y2="58" stroke="#1d5fa7" stroke-width="1.6" marker-end="url(#arr)" stroke-dasharray="4 3"/><line x1="555" y1="58" x2="555" y2="88" stroke="#1d5fa7" stroke-width="1.6" marker-end="url(#arr)" stroke-dasharray="4 3"/><text x="640" y="40" font-family="Segoe UI, system-ui, sans-serif" font-size="11.5" fill="#1d5fa7">Lead conversions flow back</text><text x="640" y="55" font-family="Segoe UI, system-ui, sans-serif" font-size="11.5" fill="#1d5fa7">to seller&#39;s ad account (CAPI)</text></svg><figcaption>Figure 1 · The core loop: sellers list, buyers inquire, leads route to the listing owner, and conversions feed each seller&#39;s own Meta ad account.</figcaption></figure>
+<h2 id="2-assumptions--open-questions">2. Assumptions &amp; Open
+Questions</h2>
+<p>These are decisions the spec assumes. Each is safe to build with, but
+flag them before launch.</p>
+<table>
+<thead>
+<tr class="header">
+<th>#</th>
+<th>Assumption</th>
+<th>Why it matters</th>
+<th>Recommended default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>A1</td>
+<td>No payments/escrow on-platform in v1. Leads only.</td>
+<td>Removes licensing, escrow, and compliance burden at launch.</td>
+<td>Confirm; add payments in a later phase if ever.</td>
+</tr>
+<tr class="even">
+<td>A2</td>
+<td>Single market/country at launch; single currency.</td>
+<td>Currency, units (acres vs. hectares vs. sq ft), and legal
+disclosures vary by market.</td>
+<td>Make currency &amp; area unit configurable per listing but default
+to one.</td>
+</tr>
+<tr class="odd">
+<td>A3</td>
+<td>Sellers are individuals or small firms, not enterprise brokerages
+(no MLS integration in v1).</td>
+<td>MLS/IDX integration is a large separate project.</td>
+<td>Skip MLS in v1.</td>
+</tr>
+<tr class="even">
+<td>A4</td>
+<td>Listing landing pages are public (no login required to view).</td>
+<td>Required for Meta ads to work — ad traffic must land on a public
+page.</td>
+<td>Public listing pages; login required only to save lists or submit an
+inquiry (see L-2 note in §5.2 for a friction tradeoff).</td>
+</tr>
+<tr class="odd">
+<td>A5</td>
+<td>"Negotiation" in v1 = structured inquiry form (offer amount +
+message), not real-time chat.</td>
+<td>Chat is a large scope increase; lead delivery is the core loop.</td>
+<td>Structured offers first; threaded messaging in Phase 2.</td>
+</tr>
+<tr class="even">
+<td>A6</td>
+<td>Admin = a small internal team, not a self-serve multi-tenant
+admin.</td>
+<td>Simplifies RBAC.</td>
+<td>One <code>admin</code> role, optionally <code>admin:read_only</code>
+later.</td>
+</tr>
+<tr class="odd">
+<td>A7</td>
+<td>Meta integration scope = Pixel firing + Conversions API (CAPI)
+events + "is connected" status. Ovyro does <strong>not</strong> create
+or manage ad campaigns on the seller's behalf in v1.</td>
+<td>Full campaign management via Marketing API is a major scope increase
+and requires advanced Meta App Review.</td>
+<td>Pixel + CAPI + connection status in v1; campaign insights read-only
+in Phase 2.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Open questions to answer before build starts:</strong></p>
+<ol type="1">
+<li>Which country/market first? (Drives legal disclaimers, phone number
+formats, map provider choice, area units.)</li>
+<li>Is seller listing free, or is there a listing fee / subscription /
+per-lead fee? (Monetization affects onboarding and admin analytics; spec
+assumes free listings in v1 with monetization hooks left in the
+schema.)</li>
+<li>Do leads include the buyer's contact info immediately, or only after
+seller accepts? (Spec assumes immediate delivery — simplest and matches
+"leads are sent to the offer creator.")</li>
+<li>Should buyers see the seller's identity/contact, or is all contact
+routed through the platform? (Spec assumes seller display name +
+platform-routed contact to reduce disintermediation.)</li>
+</ol>
+<hr />
+<h2 id="3-roles--permission-model">3. Roles &amp; Permission Model</h2>
+<h3 id="31-roles">3.1 Roles</h3>
+<ul>
+<li><code>buyer</code> — default role for every registered user.</li>
+<li><code>seller</code> — additive role granted after completing seller
+onboarding. <strong>Always retains <code>buyer</code>.</strong></li>
+<li><code>admin</code> — platform owner/staff. Assigned manually (seed
+script / direct DB or admin invite), never self-serve.</li>
+</ul>
+<p>Implementation: a <code>roles</code> array (or join table) on the
+user, <strong>not</strong> a single mutually-exclusive <code>role</code>
+column. This is important — the "seller has everything a buyer has"
+requirement breaks if role is a single enum and someone writes
+<code>if role === 'seller'</code> checks. All buyer-facing features must
+check "is authenticated," never "role === buyer."</p>
+<h3 id="32-permission-matrix">3.2 Permission matrix</h3>
+<table>
+<thead>
+<tr class="header">
+<th>Capability</th>
+<th>Anonymous</th>
+<th>Buyer</th>
+<th>Seller</th>
+<th>Admin</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Browse/search listings, view listing pages</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr class="even">
+<td>Submit inquiry/negotiation on a listing</td>
+<td>⛔ (prompted to sign up)</td>
+<td>✅</td>
+<td>✅ (not on own listings)</td>
+<td>⛔</td>
+</tr>
+<tr class="odd">
+<td>Create custom lists / like listings</td>
+<td>⛔</td>
+<td>✅</td>
+<td>✅</td>
+<td>—</td>
+</tr>
+<tr class="even">
+<td>View own inquiry history</td>
+<td>⛔</td>
+<td>✅</td>
+<td>✅</td>
+<td>—</td>
+</tr>
+<tr class="odd">
+<td>Start seller onboarding</td>
+<td>⛔</td>
+<td>✅</td>
+<td>n/a</td>
+<td>—</td>
+</tr>
+<tr class="even">
+<td>Create/edit/pause own listings</td>
+<td>⛔</td>
+<td>⛔</td>
+<td>✅</td>
+<td>✅ (any, for moderation)</td>
+</tr>
+<tr class="odd">
+<td>View lead inbox for own listings</td>
+<td>⛔</td>
+<td>⛔</td>
+<td>✅</td>
+<td>✅ (all leads, read-only)</td>
+</tr>
+<tr class="even">
+<td>Connect Meta ad account / pixel</td>
+<td>⛔</td>
+<td>⛔</td>
+<td>✅</td>
+<td>—</td>
+</tr>
+<tr class="odd">
+<td>Platform analytics dashboard</td>
+<td>⛔</td>
+<td>⛔</td>
+<td>⛔</td>
+<td>✅</td>
+</tr>
+<tr class="even">
+<td>Moderate listings / users</td>
+<td>⛔</td>
+<td>⛔</td>
+<td>⛔</td>
+<td>✅</td>
+</tr>
+</tbody>
+</table>
+<p>Guard rails:</p>
+<ul>
+<li>A seller cannot inquire on their own listing (prevents fake-lead
+inflation of their own stats).</li>
+<li>Ownership checks on every listing/lead/media mutation:
+<code>listing.seller_id === session.user.id OR isAdmin</code>.</li>
+<li>Admin actions are audit-logged (who, what, when, before/after
+snapshot).</li>
+</ul>
+<hr />
+<figure class="diagram"><svg viewBox="0 0 900 320" role="img" aria-label="Role model"><defs><marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#5b6b7a"/></marker></defs><rect x="40" y="40" width="480" height="240" rx="16" fill="#e8f3ee" stroke="#1f6f54" stroke-width="2"/><text x="280" y="70" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="15" font-weight="650" fill="#1f6f54">SELLER ROLE  (superset)</text><rect x="70" y="90" width="420" height="115" rx="12" fill="#fff" stroke="#1d5fa7" stroke-width="1.8"/><text x="280" y="115" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="14" font-weight="650" fill="#1d5fa7">BUYER ROLE  (default for every user)</text><text x="170" y="145" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="12" fill="#5b6b7a">&#8226; browse &amp; search listings</text><text x="390" y="145" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="12" fill="#5b6b7a">&#8226; inquire / negotiate</text><text x="170" y="169" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="12" fill="#5b6b7a">&#8226; custom lists &amp; saves</text><text x="390" y="169" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="12" fill="#5b6b7a">&#8226; inquiry history &amp; profile</text><text x="170" y="230" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="12" fill="#5b6b7a">&#8226; create &amp; manage listings</text><text x="390" y="230" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="12" fill="#5b6b7a">&#8226; lead inbox (mini-CRM)</text><text x="170" y="254" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="12" fill="#5b6b7a">&#8226; Meta Ads / Pixel connection</text><text x="390" y="254" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="12" fill="#5b6b7a">&#8226; seller business profile</text><rect x="620" y="90" width="240" height="115" rx="10" fill="#f5f7f9" stroke="#1c2733" stroke-width="1.5"/><text x="740.0" y="112" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="14" font-weight="650" fill="#1c2733">ADMIN</text><text x="740.0" y="130" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="12" fill="#5b6b7a">analytics &amp; funnel</text><text x="740.0" y="146" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="12" fill="#5b6b7a">moderation queue</text><text x="740.0" y="162" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="12" fill="#5b6b7a">users · leads · audit log</text><text x="740" y="230" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="11.5" fill="#5b6b7a">assigned manually — never self-serve</text><path d="M 280 205 C 280 205 280 205 280 205" fill="none"/><rect x="560" y="255" width="300" height="46" rx="10" fill="#fff4e0" stroke="#b45309" stroke-width="1.5"/><text x="710" y="274" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="12.5" font-weight="650" fill="#b45309">Buyer &#8594; Seller upgrade</text><text x="710" y="291" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="11.5" fill="#5b6b7a">only via onboarding: identity &#8594; terms &#8594; approval</text><line x1="558" y1="278" x2="380" y2="278" stroke="#b45309" stroke-width="1.6" marker-end="url(#arr)"/><line x1="380" y1="278" x2="380" y2="207" stroke="#b45309" stroke-width="1.6" marker-end="url(#arr)"/></svg><figcaption>Figure 2 · Role model: seller strictly contains buyer (signing up as seller grants the full buyer view); buyers upgrade only through onboarding; admin is separate and manually assigned.</figcaption></figure>
+<h2 id="4-feature-specification-by-view">4. Feature Specification by
+View</h2>
+<h3 id="41-admin-view-platform-owner">4.1 Admin View (Platform
+Owner)</h3>
+<p>Route namespace: <code>/admin/*</code>, gated by <code>admin</code>
+role, hidden from all navigation for non-admins.</p>
+<p><strong>4.1.1 Overview dashboard (<code>/admin</code>)</strong>
+Headline KPI cards, each with a trend vs. previous period (7/30/90-day
+selector):</p>
+<ul>
+<li>Total registered users; split: buyers-only vs. sellers.</li>
+<li>New signups in period (buyers, sellers).</li>
+<li>Active listings / paused / pending-review / rejected counts.</li>
+<li><strong>Sellers with Meta connected</strong> — count and % of all
+sellers; broken into "ad account connected," "pixel configured," and
+"both + events flowing in last 7 days" (a connection that sends no
+events is effectively broken — surface that distinctly).</li>
+<li>Total leads in period; leads per listing (median); lead →
+seller-response rate (Phase 2, once lead status tracking is live).</li>
+<li>Funnel: listing page views → inquiry form starts → inquiries
+submitted (period, with conversion %).</li>
+</ul>
+<p><strong>4.1.2 Users (<code>/admin/users</code>)</strong>
+Searchable/filterable table: name, email, roles, signup date, #
+inquiries made, # listings (if seller), Meta connection status, last
+active. Row actions: view detail, suspend/unsuspend, grant/revoke seller
+role (manual override for onboarding edge cases), delete (soft-delete
+with GDPR-style anonymization).</p>
+<p><strong>4.1.3 Listings (<code>/admin/listings</code>)</strong>
+Moderation queue is the primary job: new listings land in
+<code>pending_review</code> and require admin approval before going live
+(land fraud is common; see §11 R-1). Filters: status, seller, date, flag
+reports. Actions: approve, reject with reason (emailed to seller),
+unpublish, feature/unfeature, edit.</p>
+<p><strong>4.1.4 Leads (<code>/admin/leads</code>)</strong> Read-only
+view of all leads across the platform: listing, buyer, seller, offer
+amount, timestamp, delivery status (delivered via email? seller viewed
+it?). Purpose: dispute resolution and funnel debugging, not lead
+management.</p>
+<p><strong>4.1.5 Analytics (<code>/admin/analytics</code>)</strong>
+Deeper charts (time series): signups, listings created, leads, page
+views by listing, top listings by leads, geographic distribution of
+listings and of buyer interest, seller Meta-connection adoption over
+time. Implementation detail in §10.</p>
+<p><strong>4.1.6 Settings (<code>/admin/settings</code>)</strong>
+Feature flags, moderation toggles (auto-approve on/off), email template
+previews, admin user management.</p>
+<h3 id="42-buyer-consumer-view">4.2 Buyer (Consumer) View</h3>
+<p><strong>4.2.1 Public browse &amp; search (<code>/</code>,
+<code>/land</code>, <code>/land/[slug]</code>)</strong></p>
+<ul>
+<li>Grid/list of active listings with photo, title, price, area,
+location, land type (agricultural / residential plot / commercial /
+recreational / other).</li>
+<li>Filters: location (text + region select; map-radius search in Phase
+2), price range, area range (with unit), land type, road access,
+utilities available, sort (newest, price, area, popularity).</li>
+<li>Search: Postgres full-text on title/description/location in v1.
+(PostGIS geo-radius is Phase 2 — schema includes lat/lng from day one so
+no migration pain.)</li>
+<li>Listing detail page = the <strong>seller landing page</strong> (see
+§5.2): gallery (photos + videos), full description, parcel details
+(area, zoning if provided, access, utilities, coordinates/map embed),
+price &amp; negotiability flag, seller display name, inquiry form,
+like/save button, share button. This page must be fast, public,
+SEO-friendly (SSR, OpenGraph tags) — it's the destination for sellers'
+Meta ads.</li>
+</ul>
+<p><strong>4.2.2 Inquiry / negotiation form</strong> On each listing:
+"Contact seller / Make an offer." Fields: name &amp; phone (pre-filled
+from profile), offer amount (optional — "ask at listed price" default),
+message, preferred contact method, consent checkbox (privacy policy +
+"share my contact details with the seller"). Behavior:</p>
+<ul>
+<li>Requires login; anonymous users hit a low-friction signup wall
+(email or phone OTP) with the form state preserved.</li>
+<li>On submit: lead record created → seller notified (email immediately;
+in-app inbox; SMS/WhatsApp Phase 2) → buyer gets confirmation →
+<strong>Meta conversion event <code>Lead</code> fired for that listing's
+seller pixel</strong> (pixel client-side + CAPI server-side with shared
+<code>event_id</code>, §5.3).</li>
+<li>Anti-abuse: rate limit (e.g., max 10 inquiries/day/user, 1 per
+listing per 72h), honeypot field, optional Turnstile/hCaptcha, phone
+verification via OTP before first inquiry (strongly recommended —
+sellers churn instantly on junk leads; see §11 R-3).</li>
+</ul>
+<p><strong>4.2.3 Profile &amp; account
+(<code>/account</code>)</strong></p>
+<ul>
+<li>Auth: email+password and email OTP magic link; phone OTP for
+verification; Google OAuth optional. Sessions via secure HTTP-only
+cookies.</li>
+<li>Profile: name, phone (verified badge), email, avatar, investment
+preferences (regions, budget range, land types) — used later for
+alerts/recommendations.</li>
+<li><strong>My Inquiries (<code>/account/inquiries</code>)</strong>:
+every listing the buyer has inquired on, with their offer, date, and
+listing status (still active / sold / removed). This is the required
+"see all listings I've requested to negotiate on."</li>
+<li><strong>My Lists (<code>/account/lists</code>)</strong>: the
+like/wishlist system:
+<ul>
+<li>Every user gets a default "Saved" list.</li>
+<li>Users can create unlimited custom-named lists ("Goa beach plots,"
+"Under 50L near highway," etc.), rename, delete.</li>
+<li>Heart/save button on every listing card and detail page → quick-save
+to "Saved" or long-press/dropdown to pick/create a list. A listing can
+be in multiple lists.</li>
+<li>Lists show current price and a "price changed since you saved"
+indicator (nice-to-have, cheap to build: store price_at_save).</li>
+<li>If a saved listing is sold/removed, it stays in the list greyed-out
+with status badge (don't silently disappear — investors track
+outcomes).</li>
+</ul></li>
+<li><strong>Become a Seller</strong> CTA: persistent but unobtrusive
+entry point in account menu and after a buyer's Nth inquiry ("Own land?
+List it on Ovyro").</li>
+</ul>
+<p><strong>4.2.4 Buyer → Seller onboarding
+(<code>/sell/onboarding</code>)</strong> Multi-step, resumable:</p>
+<ol type="1">
+<li>Intent &amp; type (individual owner / broker / company).</li>
+<li>Contact &amp; identity: legal name, verified phone (OTP), address;
+optionally an ID document upload (feature-flagged — enable when fraud
+appears; see §11 R-1).</li>
+<li>Payout/monetization details — skipped in v1 (no payments), slot
+reserved.</li>
+<li>Agreement: seller terms acceptance (timestamped).</li>
+<li>Completion → <code>seller</code> role added, redirected to seller
+dashboard with a "create your first listing" wizard.</li>
+</ol>
+<p>State machine:
+<code>not_started → in_progress(step_n) → submitted → approved | rejected</code>.
+If admin review of sellers is enabled (flag), <code>submitted</code>
+requires approval; otherwise auto-approve.</p>
+<h3 id="43-seller-view">4.3 Seller View</h3>
+<p>Route namespace: <code>/dashboard/*</code> (seller-gated). Global nav
+shows a <strong>role switcher</strong> ("Browsing" / "Selling") so the
+seller ⊇ buyer requirement is a first-class UI concept, not two separate
+accounts.</p>
+<p><strong>4.3.1 Listings management
+(<code>/dashboard/listings</code>)</strong></p>
+<ul>
+<li>Create/edit wizard: basics (title, land type, price, negotiable
+flag) → location (address text, map-pin drag for lat/lng, plot/survey
+number optional) → details (area + unit, dimensions, road access,
+utilities, zoning, legal docs available y/n, description) → media →
+review &amp; submit.</li>
+<li>Media: up to 25 photos + 5 videos per listing. Direct-to-storage
+uploads via presigned URLs (never through the app server — Railway
+containers shouldn't buffer 500MB videos). Photos: jpg/png/webp/heic,
+≤15MB each, server-side processed to responsive webp variants + blur
+placeholder. Videos: mp4/mov ≤500MB, transcoded to HLS via Mux
+(recommended) or Cloudflare Stream; show processing status.
+Drag-to-reorder; first photo = cover.</li>
+<li>Statuses:
+<code>draft → pending_review → active → paused | sold | rejected | expired</code>.
+Seller can pause/reactivate and mark sold. Listings auto-expire after 90
+days with renew prompts (keeps inventory fresh; configurable).</li>
+<li>Per-listing stats: views, saves, inquiries (7/30-day
+sparkline).</li>
+</ul>
+<figure class="diagram"><svg viewBox="0 0 900 260" role="img" aria-label="Listing lifecycle"><defs><marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#5b6b7a"/></marker></defs><rect x="20" y="30" width="120" height="44" rx="22" fill="#f5f7f9" stroke="#c8d2da" stroke-width="1.5"/><text x="80.0" y="57.0" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="13" font-weight="650" fill="#1c2733">draft</text><rect x="190" y="30" width="150" height="44" rx="22" fill="#fff4e0" stroke="#b45309" stroke-width="1.5"/><text x="265.0" y="57.0" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="13" font-weight="650" fill="#1c2733">pending_review</text><rect x="420" y="30" width="120" height="44" rx="22" fill="#e8f3ee" stroke="#1f6f54" stroke-width="1.5"/><text x="480.0" y="57.0" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="13" font-weight="650" fill="#1c2733">active</text><rect x="640" y="30" width="120" height="44" rx="22" fill="#fff" stroke="#c8d2da" stroke-width="1.5"/><text x="700.0" y="57.0" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="13" font-weight="650" fill="#1c2733">sold</text><rect x="420" y="140" width="120" height="44" rx="22" fill="#f5f7f9" stroke="#c8d2da" stroke-width="1.5"/><text x="480.0" y="167.0" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="13" font-weight="650" fill="#1c2733">paused</text><rect x="190" y="140" width="120" height="44" rx="22" fill="#fdecec" stroke="#c0392b" stroke-width="1.5"/><text x="250.0" y="167.0" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="13" font-weight="650" fill="#1c2733">rejected</text><rect x="640" y="140" width="120" height="44" rx="22" fill="#f5f7f9" stroke="#c8d2da" stroke-width="1.5"/><text x="700.0" y="167.0" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="13" font-weight="650" fill="#1c2733">expired</text><line x1="140" y1="52" x2="188" y2="52" stroke="#5b6b7a" stroke-width="1.6" marker-end="url(#arr)"/><text x="164.0" y="46.0" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="11.5" fill="#5b6b7a">submit</text><line x1="340" y1="52" x2="418" y2="52" stroke="#1f6f54" stroke-width="1.6" marker-end="url(#arr)"/><text x="379.0" y="46.0" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="11.5" fill="#5b6b7a">admin approves</text><line x1="540" y1="52" x2="638" y2="52" stroke="#5b6b7a" stroke-width="1.6" marker-end="url(#arr)"/><text x="589.0" y="46.0" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="11.5" fill="#5b6b7a">seller marks sold</text><line x1="265" y1="74" x2="265" y2="138" stroke="#c0392b" stroke-width="1.6" marker-end="url(#arr)"/><text x="330" y="100.0" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="11.5" fill="#5b6b7a">admin rejects</text><line x1="460" y1="74" x2="460" y2="138" stroke="#5b6b7a" stroke-width="1.6" marker-end="url(#arr)"/><text x="440" y="100.0" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="11.5" fill="#5b6b7a">pause</text><line x1="500" y1="138" x2="500" y2="74" stroke="#5b6b7a" stroke-width="1.6" marker-end="url(#arr)"/><text x="545" y="100.0" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="11.5" fill="#5b6b7a">reactivate</text><line x1="560" y1="96" x2="660" y2="138" stroke="#5b6b7a" stroke-width="1.6" marker-end="url(#arr)"/><text x="610" y="105" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="11.5" fill="#5b6b7a">90 days idle</text><line x1="700" y1="138" x2="640" y2="76" stroke="#5b6b7a" stroke-width="1.6" marker-end="url(#arr)" stroke-dasharray="4 3"/><text x="700" y="100" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="11.5" fill="#5b6b7a">renew</text><line x1="265" y1="186" x2="100" y2="186" stroke="#5b6b7a" stroke-width="1.6" marker-end="url(#arr)"/><text x="180" y="205" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="11.5" fill="#5b6b7a">edit &amp; resubmit</text><line x1="100" y1="186" x2="80" y2="186" stroke="#5b6b7a" stroke-width="0"/><path d="M 100 186 L 60 186 L 60 76" fill="none" stroke="#5b6b7a" stroke-width="1.6" marker-end="url(#arr)"/><text x="450" y="235" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="11.5" fill="#5b6b7a">Listings with leads are never hard-deleted — sold/removed listings stay resolvable (greyed out) in buyers&#39; lists and inquiry history (R-12).</text></svg><figcaption>Figure 3 · Listing status state machine. Admin review gates everything before it goes public (fraud control, R-1); expiry keeps inventory fresh.</figcaption></figure>
+<p><strong>4.3.2 Lead inbox (<code>/dashboard/leads</code>)</strong></p>
+<ul>
+<li>All inquiries across the seller's listings; filter by listing, date,
+status.</li>
+<li>Lead card: buyer name, verified-phone badge, offer amount, message,
+contact details, timestamps.</li>
+<li>Status pipeline seller can set:
+<code>new → contacted → negotiating → won → lost</code> (feeds admin
+funnel analytics and gives sellers a lightweight CRM).</li>
+<li>Every lead also delivered by email at submission time (leads are the
+product — never rely on the seller logging in).</li>
+</ul>
+<p><strong>4.3.3 Meta Ads connection
+(<code>/dashboard/marketing</code>)</strong> Full detail in §5.
+Seller-facing surface:</p>
+<ul>
+<li>"Connect Meta" button → Facebook OAuth (Facebook Login for
+Business).</li>
+<li>After connect: pick ad account, pick (or auto-detect) Pixel/dataset
+ID.</li>
+<li>Status panel: token health (valid / expiring / expired — reconnect
+CTA), pixel ID in use, events sent in last 7 days per listing,
+test-event tool ("fire a test Lead event and check Events
+Manager").</li>
+<li>Clear explanation copy: "Your Pixel fires on your listing pages. Run
+Meta ads pointing to your listing URL, and lead conversions flow into
+your ad account for optimization."</li>
+<li>Disconnect button (deletes tokens, stops pixel injection).</li>
+</ul>
+<p><strong>4.3.4 Seller settings</strong> Business profile (display name
+shown to buyers, about, logo), notification preferences (email per-lead,
+daily digest), and everything from buyer account settings.</p>
+<hr />
+<h2 id="5-meta-ads--pixel-integration-deep-dive">5. Meta Ads / Pixel
+Integration (Deep Dive)</h2>
+<p>This is the most technically sensitive part of the platform.
+Requirements restated precisely:</p>
+<ul>
+<li>All seller listing pages share the same template on Ovyro's
+domain.</li>
+<li>Each seller can connect <strong>their own</strong> Meta ad account
+and Pixel.</li>
+<li>When a buyer converts (submits an inquiry) on Seller X's listing
+page, the conversion must be reported to <strong>Seller X's</strong>
+pixel/ad account — and no one else's.</li>
+</ul>
+<h3 id="51-meta-app-setup-one-time-platform-level">5.1 Meta App setup
+(one-time, platform-level)</h3>
+<ul>
+<li>Create a Meta App (Business type) owned by Ovyro's Meta Business
+Manager.</li>
+<li>Products: <strong>Facebook Login for Business</strong> +
+<strong>Marketing API</strong> (for CAPI + pixel listing).</li>
+<li>Permissions to request in App Review: <code>ads_management</code>
+(or <code>ads_read</code> if only reading),
+<code>business_management</code>, <code>pages_show_list</code> (only if
+needed). Start development in Dev Mode with test users; <strong>App
+Review + Business Verification are hard prerequisites for real
+sellers</strong> — begin this process at project start, it takes weeks
+(see §11 R-6).</li>
+<li>Use <strong>long-lived tokens</strong> (60-day) exchanged from the
+OAuth short-lived token. Store: encrypted at rest (AES-256-GCM via
+app-level encryption; key in Railway env var), never sent to the client,
+never logged.</li>
+</ul>
+<h3 id="52-pixel-injection-on-listing-pages">5.2 Pixel injection on
+listing pages</h3>
+<ul>
+<li><code>meta_connections</code> table maps seller → pixel_id (+ token,
+ad_account_id).</li>
+<li>Listing page SSR: if the listing's seller has an active connection
+with a pixel_id, inject the Meta Pixel base code with <strong>that
+pixel_id only</strong>, and fire <code>PageView</code> +
+<code>ViewContent</code> (content_ids: [listing_id], content_type:
+'product', value: price, currency).</li>
+<li><strong>Isolation rule (critical):</strong> exactly one seller pixel
+per page — the listing owner's. Never fire Seller A's pixel on Seller
+B's page. Ovyro's own platform pixel (if any) may fire alongside, but
+seller pixels never cross listings. Enforce in one single code path (a
+<code>&lt;MetaPixel sellerConnection={…}/&gt;</code> component) so there
+is exactly one place this can go wrong.</li>
+<li><strong>L-2 friction note:</strong> ads optimized for Lead events
+perform poorly if a login wall blocks the form. Mitigate: the inquiry
+form itself is fillable without login; the OTP verification happens
+inline as the final step of submission (verify phone → lead created).
+This keeps ad conversion friction low while still verifying every
+lead.</li>
+<li><strong>Consent (GDPR/ePrivacy):</strong> if operating anywhere
+consent laws apply, pixels load only after cookie-consent acceptance.
+Build the consent banner + conditional pixel loading from day one —
+retrofitting is painful. In consent-denied cases, only server-side CAPI
+with limited data (or nothing) fires, per policy configuration.</li>
+</ul>
+<h3 id="53-conversions-api-server-side--deduplication">5.3 Conversions
+API (server-side) + deduplication</h3>
+<p>Client-side pixels are increasingly blocked (ad blockers, iOS). Send
+every conversion both ways:</p>
+<ol type="1">
+<li>Browser:
+<code>fbq('track', 'Lead', {value, currency, content_ids:[listing_id]}, {eventID})</code>.</li>
+<li>Server (background job, not in the request path): POST to
+<code>https://graph.facebook.com/v{N}/{pixel_id}/events</code> with the
+seller's token, same <code>event_id</code>,
+<code>event_name: 'Lead'</code>, <code>event_source_url</code>, hashed
+user data (<code>em</code>, <code>ph</code> — SHA-256 of normalized
+email/phone), <code>fbp</code>/<code>fbc</code> cookies captured at
+submit, <code>action_source: 'website'</code>.</li>
+<li>Meta dedupes on <code>event_id</code> + event name. Generate
+<code>event_id</code> server-side at lead creation (ULID) and pass to
+the client.</li>
+</ol>
+<p>Events to implement: <code>PageView</code>, <code>ViewContent</code>
+(listing view), <code>Lead</code> (inquiry submitted). Optional Phase 2:
+<code>AddToWishlist</code> (save button),
+<code>InitiateCheckout</code>-analog (form started).</p>
+<p>CAPI dispatch runs on a queue with retries + exponential backoff;
+failures visible in seller status panel and admin analytics ("events
+flowing" metric, §4.1.1).</p>
+<figure class="diagram"><svg viewBox="0 0 900 360" role="img" aria-label="Meta event flow"><defs><marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#5b6b7a"/></marker></defs><rect x="20" y="15" width="180" height="40" rx="10" fill="#e9f1fb" stroke="#1d5fa7" stroke-width="1.5"/><text x="110.0" y="40.0" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="13" font-weight="650" fill="#1c2733">BROWSER</text><line x1="110" y1="55" x2="110" y2="340" stroke="#c8d2da" stroke-width="1" stroke-dasharray="3 4"/><rect x="250" y="15" width="180" height="40" rx="10" fill="#fff" stroke="#1c2733" stroke-width="1.5"/><text x="340.0" y="40.0" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="13" font-weight="650" fill="#1c2733">OVYRO WEB (SSR)</text><line x1="340" y1="55" x2="340" y2="340" stroke="#c8d2da" stroke-width="1" stroke-dasharray="3 4"/><rect x="480" y="15" width="180" height="40" rx="10" fill="#f5f7f9" stroke="#1c2733" stroke-width="1.5"/><text x="570.0" y="40.0" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="13" font-weight="650" fill="#1c2733">WORKER QUEUE</text><line x1="570" y1="55" x2="570" y2="340" stroke="#c8d2da" stroke-width="1" stroke-dasharray="3 4"/><rect x="700" y="15" width="180" height="40" rx="10" fill="#e8f3ee" stroke="#1f6f54" stroke-width="1.5"/><text x="790.0" y="40.0" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="13" font-weight="650" fill="#1c2733">META</text><line x1="790" y1="55" x2="790" y2="340" stroke="#c8d2da" stroke-width="1" stroke-dasharray="3 4"/><line x1="340" y1="85" x2="115" y2="85" stroke="#5b6b7a" stroke-width="1.6" marker-end="url(#arr)"/><text x="228" y="77" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="11.5" fill="#5b6b7a">listing page + owner&#39;s Pixel only</text><line x1="110" y1="127" x2="340" y2="127" stroke="#5b6b7a" stroke-width="1.6" marker-end="url(#arr)"/><text x="225" y="119" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="11.5" fill="#5b6b7a">inquiry submit (OTP-verified)</text><rect x="255" y="153" width="170" height="34" rx="8" fill="#fff4e0" stroke="#b45309"/><text x="340" y="174" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="12" fill="#1c2733">create Lead + event_id</text><line x1="340" y1="213" x2="115" y2="213" stroke="#5b6b7a" stroke-width="1.6" marker-end="url(#arr)"/><text x="228" y="205" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="11.5" fill="#5b6b7a">event_id returned</text><line x1="345" y1="229" x2="568" y2="229" stroke="#5b6b7a" stroke-width="1.6" marker-end="url(#arr)"/><text x="455" y="221" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="11.5" fill="#5b6b7a">enqueue CAPI job</text><line x1="110" y1="265" x2="785" y2="265" stroke="#1d5fa7" stroke-width="1.6" marker-end="url(#arr)"/><text x="430" y="257" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="11.5" fill="#5b6b7a">fbq(&#39;track&#39;,&#39;Lead&#39;, eventID)  — client pixel</text><line x1="570" y1="311" x2="785" y2="311" stroke="#1f6f54" stroke-width="1.8" marker-end="url(#arr)"/><text x="610" y="303" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="11.5" fill="#5b6b7a">POST /pixel_id/events (same event_id, hashed em/ph, fbp/fbc)</text><rect x="705" y="337" width="172" height="48" rx="8" fill="#fff" stroke="#1f6f54"/><text x="791" y="355" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="12" font-weight="650" fill="#1f6f54">dedupe on event_id</text><text x="791" y="372" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="11" fill="#5b6b7a">one Lead counted, not two</text><text x="570" y="369" text-anchor="end" font-family="Segoe UI, system-ui, sans-serif" font-size="11" fill="#5b6b7a">retries + backoff; failures &#8594; needs_reauth &amp; seller alert</text></svg><figcaption>Figure 4 · Dual-channel conversion delivery: browser Pixel + server-side Conversions API share one event_id so Meta deduplicates. The seller&#39;s pixel — and only theirs — appears on their listing page (R-4).</figcaption></figure>
+<h3 id="54-token-lifecycle--failure-modes">5.4 Token lifecycle &amp;
+failure modes</h3>
+<table>
+<thead>
+<tr class="header">
+<th>Failure</th>
+<th>Detection</th>
+<th>Handling</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Token expired (60d) or revoked by seller on Meta side</td>
+<td>CAPI call returns 190/463 error codes; scheduled daily token-check
+job</td>
+<td>Mark connection <code>needs_reauth</code>; stop pixel injection?
+<strong>No</strong> — pixel injection needs no token (pixel_id is
+public-ish), so keep firing pixel; only CAPI pauses. Email seller +
+dashboard banner: "Reconnect Meta."</td>
+</tr>
+<tr class="even">
+<td>Seller deletes pixel in Meta</td>
+<td>CAPI errors reference invalid pixel</td>
+<td>Same as above; prompt reconfigure.</td>
+</tr>
+<tr class="odd">
+<td>Seller connects the wrong ad account/pixel</td>
+<td>Confusing zero-event debugging</td>
+<td>Test-event tool in dashboard (§4.3.3) + show pixel name fetched from
+API, not just ID.</td>
+</tr>
+<tr class="even">
+<td>Meta rate limits</td>
+<td>429 / error subcodes</td>
+<td>Queue backoff; batch events (CAPI accepts arrays).</td>
+</tr>
+<tr class="odd">
+<td>App Review not granted at launch</td>
+<td>Blocking</td>
+<td>Feature-flag the whole Meta module; platform launches without it,
+sellers see "coming soon."</td>
+</tr>
+</tbody>
+</table>
+<h3 id="55-what-ovyro-explicitly-does-not-do-in-v1">5.5 What Ovyro
+explicitly does NOT do in v1</h3>
+<ul>
+<li>Create/manage campaigns, ad sets, or ads for sellers.</li>
+<li>Spend money or hold ad budgets.</li>
+<li>Show campaign performance dashboards (Phase 2: read-only insights
+via <code>ads_read</code>). This keeps App Review scope minimal and
+avoids becoming an ad agency by accident.</li>
+</ul>
+<hr />
+<h2 id="6-data-model-postgresql">6. Data Model (PostgreSQL)</h2>
+<p>Conventions: ULID primary keys (<code>id text primary key</code>),
+<code>created_at</code>/<code>updated_at timestamptz</code> on all
+tables, soft-delete via <code>deleted_at</code> where noted. Prisma or
+Drizzle ORM; migrations checked into repo.</p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode sql"><code class="sourceCode sql"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co">-- users &amp; auth</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>users (</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  <span class="kw">id</span>, email <span class="kw">UNIQUE</span>, email_verified_at, phone, phone_verified_at,</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  password_hash NULLABLE,           <span class="co">-- null if OAuth-only</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  name, avatar_url,</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>  status ENUM(<span class="st">&#39;active&#39;</span>,<span class="st">&#39;suspended&#39;</span>,<span class="st">&#39;deleted&#39;</span>),</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>  deleted_at, last_active_at</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>user_roles (user_id FK, <span class="kw">role</span> ENUM(<span class="st">&#39;buyer&#39;</span>,<span class="st">&#39;seller&#39;</span>,<span class="st">&#39;admin&#39;</span>), granted_at, <span class="kw">PRIMARY</span> <span class="kw">KEY</span>(user_id, <span class="kw">role</span>))</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>sessions (<span class="kw">id</span>, user_id FK, expires_at, ip, user_agent)         <span class="co">-- or managed by auth lib</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>oauth_accounts (<span class="kw">id</span>, user_id FK, provider, provider_account_id) <span class="co">-- google, facebook(login)</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="co">-- seller onboarding &amp; profile</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>seller_onboarding (</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>  <span class="kw">id</span>, user_id FK <span class="kw">UNIQUE</span>, step <span class="dt">INT</span>, state ENUM(<span class="st">&#39;in_progress&#39;</span>,<span class="st">&#39;submitted&#39;</span>,<span class="st">&#39;approved&#39;</span>,<span class="st">&#39;rejected&#39;</span>),</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>  seller_type ENUM(<span class="st">&#39;individual&#39;</span>,<span class="st">&#39;broker&#39;</span>,<span class="st">&#39;company&#39;</span>),</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>  legal_name, address_json, id_document_url NULLABLE,</span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>  terms_accepted_at, reviewed_by NULLABLE, review_note, submitted_at</span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>seller_profiles (</span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>  <span class="kw">id</span>, user_id FK <span class="kw">UNIQUE</span>, display_name, about, logo_url,</span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>  notification_prefs_json</span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a><span class="co">-- listings</span></span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>listings (</span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>  <span class="kw">id</span>, seller_id FK<span class="op">-&gt;</span>users, slug <span class="kw">UNIQUE</span>,</span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a>  title, description,</span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a>  land_type ENUM(<span class="st">&#39;agricultural&#39;</span>,<span class="st">&#39;residential_plot&#39;</span>,<span class="st">&#39;commercial&#39;</span>,<span class="st">&#39;industrial&#39;</span>,<span class="st">&#39;recreational&#39;</span>,<span class="st">&#39;other&#39;</span>),</span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a>  price <span class="dt">NUMERIC</span>(<span class="dv">14</span>,<span class="dv">2</span>), currency <span class="dt">CHAR</span>(<span class="dv">3</span>), negotiable BOOL,</span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a>  area <span class="dt">NUMERIC</span>(<span class="dv">12</span>,<span class="dv">2</span>), area_unit ENUM(<span class="st">&#39;sqft&#39;</span>,<span class="st">&#39;sqm&#39;</span>,<span class="st">&#39;acre&#39;</span>,<span class="st">&#39;hectare&#39;</span>,<span class="st">&#39;guntha&#39;</span>,<span class="st">&#39;cent&#39;</span>,<span class="st">&#39;other&#39;</span>),</span>
+<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a>  address_text, city, region, country <span class="dt">CHAR</span>(<span class="dv">2</span>),</span>
+<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a>  lat <span class="dt">DOUBLE</span> NULLABLE, lng <span class="dt">DOUBLE</span> NULLABLE,</span>
+<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a>  survey_number NULLABLE, zoning NULLABLE,</span>
+<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a>  road_access BOOL NULLABLE, water BOOL NULLABLE, electricity BOOL NULLABLE,</span>
+<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a>  legal_docs_available BOOL <span class="kw">DEFAULT</span> <span class="kw">false</span>,</span>
+<span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a>  status ENUM(<span class="st">&#39;draft&#39;</span>,<span class="st">&#39;pending_review&#39;</span>,<span class="st">&#39;active&#39;</span>,<span class="st">&#39;paused&#39;</span>,<span class="st">&#39;sold&#39;</span>,<span class="st">&#39;rejected&#39;</span>,<span class="st">&#39;expired&#39;</span>),</span>
+<span id="cb1-38"><a href="#cb1-38" aria-hidden="true" tabindex="-1"></a>  rejected_reason NULLABLE, featured BOOL <span class="kw">DEFAULT</span> <span class="kw">false</span>,</span>
+<span id="cb1-39"><a href="#cb1-39" aria-hidden="true" tabindex="-1"></a>  published_at, expires_at, deleted_at,</span>
+<span id="cb1-40"><a href="#cb1-40" aria-hidden="true" tabindex="-1"></a>  view_count <span class="dt">INT</span> <span class="kw">DEFAULT</span> <span class="dv">0</span>, save_count <span class="dt">INT</span> <span class="kw">DEFAULT</span> <span class="dv">0</span>, lead_count <span class="dt">INT</span> <span class="kw">DEFAULT</span> <span class="dv">0</span>  <span class="co">-- denormalized counters</span></span>
+<span id="cb1-41"><a href="#cb1-41" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb1-42"><a href="#cb1-42" aria-hidden="true" tabindex="-1"></a><span class="co">-- indexes: (status, published_at), (seller_id), (city), (land_type), (price), GIN full-text on title||description||address_text</span></span>
+<span id="cb1-43"><a href="#cb1-43" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-44"><a href="#cb1-44" aria-hidden="true" tabindex="-1"></a>listing_media (</span>
+<span id="cb1-45"><a href="#cb1-45" aria-hidden="true" tabindex="-1"></a>  <span class="kw">id</span>, listing_id FK, kind ENUM(<span class="st">&#39;photo&#39;</span>,<span class="st">&#39;video&#39;</span>),</span>
+<span id="cb1-46"><a href="#cb1-46" aria-hidden="true" tabindex="-1"></a>  storage_key, url, thumb_url, blurhash NULLABLE,</span>
+<span id="cb1-47"><a href="#cb1-47" aria-hidden="true" tabindex="-1"></a>  mux_asset_id NULLABLE, processing_status ENUM(<span class="st">&#39;uploading&#39;</span>,<span class="st">&#39;processing&#39;</span>,<span class="st">&#39;ready&#39;</span>,<span class="st">&#39;failed&#39;</span>),</span>
+<span id="cb1-48"><a href="#cb1-48" aria-hidden="true" tabindex="-1"></a>  sort_order <span class="dt">INT</span>, width, height, duration_s NULLABLE, bytes</span>
+<span id="cb1-49"><a href="#cb1-49" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb1-50"><a href="#cb1-50" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-51"><a href="#cb1-51" aria-hidden="true" tabindex="-1"></a><span class="co">-- buyer features</span></span>
+<span id="cb1-52"><a href="#cb1-52" aria-hidden="true" tabindex="-1"></a>lists (<span class="kw">id</span>, user_id FK, name, is_default BOOL, deleted_at, <span class="kw">UNIQUE</span>(user_id, name))</span>
+<span id="cb1-53"><a href="#cb1-53" aria-hidden="true" tabindex="-1"></a>list_items (<span class="kw">id</span>, list_id FK, listing_id FK, price_at_save <span class="dt">NUMERIC</span>, <span class="kw">UNIQUE</span>(list_id, listing_id))</span>
+<span id="cb1-54"><a href="#cb1-54" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-55"><a href="#cb1-55" aria-hidden="true" tabindex="-1"></a>leads (</span>
+<span id="cb1-56"><a href="#cb1-56" aria-hidden="true" tabindex="-1"></a>  <span class="kw">id</span>, listing_id FK, buyer_id FK<span class="op">-&gt;</span>users, seller_id FK<span class="op">-&gt;</span>users,  <span class="co">-- seller denormalized for inbox queries</span></span>
+<span id="cb1-57"><a href="#cb1-57" aria-hidden="true" tabindex="-1"></a>  offer_amount <span class="dt">NUMERIC</span> NULLABLE, message TEXT,</span>
+<span id="cb1-58"><a href="#cb1-58" aria-hidden="true" tabindex="-1"></a>  contact_name, contact_phone, contact_email, preferred_contact ENUM(<span class="st">&#39;phone&#39;</span>,<span class="st">&#39;whatsapp&#39;</span>,<span class="st">&#39;email&#39;</span>),</span>
+<span id="cb1-59"><a href="#cb1-59" aria-hidden="true" tabindex="-1"></a>  consent_at TIMESTAMPTZ <span class="kw">NOT</span> <span class="kw">NULL</span>,</span>
+<span id="cb1-60"><a href="#cb1-60" aria-hidden="true" tabindex="-1"></a>  status ENUM(<span class="st">&#39;new&#39;</span>,<span class="st">&#39;contacted&#39;</span>,<span class="st">&#39;negotiating&#39;</span>,<span class="st">&#39;won&#39;</span>,<span class="st">&#39;lost&#39;</span>) <span class="kw">DEFAULT</span> <span class="st">&#39;new&#39;</span>,</span>
+<span id="cb1-61"><a href="#cb1-61" aria-hidden="true" tabindex="-1"></a>  seller_first_viewed_at NULLABLE,</span>
+<span id="cb1-62"><a href="#cb1-62" aria-hidden="true" tabindex="-1"></a>  email_delivered_at NULLABLE,</span>
+<span id="cb1-63"><a href="#cb1-63" aria-hidden="true" tabindex="-1"></a>  meta_event_id TEXT <span class="kw">UNIQUE</span>,        <span class="co">-- ULID used for pixel/CAPI dedup</span></span>
+<span id="cb1-64"><a href="#cb1-64" aria-hidden="true" tabindex="-1"></a>  fbp TEXT NULLABLE, fbc TEXT NULLABLE, client_ip, client_ua,</span>
+<span id="cb1-65"><a href="#cb1-65" aria-hidden="true" tabindex="-1"></a>  <span class="kw">UNIQUE</span>(listing_id, buyer_id, created_at:<span class="ch">:date</span> bucket handled <span class="kw">in</span> app logic <span class="op">/</span> partial rate<span class="op">-</span><span class="kw">limit</span> <span class="kw">table</span>)</span>
+<span id="cb1-66"><a href="#cb1-66" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb1-67"><a href="#cb1-67" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-68"><a href="#cb1-68" aria-hidden="true" tabindex="-1"></a><span class="co">-- meta integration</span></span>
+<span id="cb1-69"><a href="#cb1-69" aria-hidden="true" tabindex="-1"></a>meta_connections (</span>
+<span id="cb1-70"><a href="#cb1-70" aria-hidden="true" tabindex="-1"></a>  <span class="kw">id</span>, user_id FK <span class="kw">UNIQUE</span>,</span>
+<span id="cb1-71"><a href="#cb1-71" aria-hidden="true" tabindex="-1"></a>  fb_user_id, business_id NULLABLE,</span>
+<span id="cb1-72"><a href="#cb1-72" aria-hidden="true" tabindex="-1"></a>  ad_account_id, pixel_id, pixel_name,</span>
+<span id="cb1-73"><a href="#cb1-73" aria-hidden="true" tabindex="-1"></a>  access_token_encrypted BYTEA, token_expires_at,</span>
+<span id="cb1-74"><a href="#cb1-74" aria-hidden="true" tabindex="-1"></a>  status ENUM(<span class="st">&#39;active&#39;</span>,<span class="st">&#39;needs_reauth&#39;</span>,<span class="st">&#39;disconnected&#39;</span>),</span>
+<span id="cb1-75"><a href="#cb1-75" aria-hidden="true" tabindex="-1"></a>  last_event_at NULLABLE, connected_at, disconnected_at</span>
+<span id="cb1-76"><a href="#cb1-76" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb1-77"><a href="#cb1-77" aria-hidden="true" tabindex="-1"></a>meta_event_log (</span>
+<span id="cb1-78"><a href="#cb1-78" aria-hidden="true" tabindex="-1"></a>  <span class="kw">id</span>, connection_id FK, lead_id FK NULLABLE, listing_id FK,</span>
+<span id="cb1-79"><a href="#cb1-79" aria-hidden="true" tabindex="-1"></a>  event_name, event_id, channel ENUM(<span class="st">&#39;capi&#39;</span>),</span>
+<span id="cb1-80"><a href="#cb1-80" aria-hidden="true" tabindex="-1"></a>  status ENUM(<span class="st">&#39;queued&#39;</span>,<span class="st">&#39;sent&#39;</span>,<span class="st">&#39;failed&#39;</span>), attempts <span class="dt">INT</span>, last_error TEXT NULLABLE, sent_at</span>
+<span id="cb1-81"><a href="#cb1-81" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb1-82"><a href="#cb1-82" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-83"><a href="#cb1-83" aria-hidden="true" tabindex="-1"></a><span class="co">-- analytics &amp; ops</span></span>
+<span id="cb1-84"><a href="#cb1-84" aria-hidden="true" tabindex="-1"></a>analytics_events (</span>
+<span id="cb1-85"><a href="#cb1-85" aria-hidden="true" tabindex="-1"></a>  <span class="kw">id</span> BIGSERIAL, occurred_at, event_name,     <span class="co">-- &#39;listing_view&#39;,&#39;inquiry_started&#39;,&#39;inquiry_submitted&#39;,&#39;signup&#39;,&#39;listing_created&#39;,&#39;save&#39;, ...</span></span>
+<span id="cb1-86"><a href="#cb1-86" aria-hidden="true" tabindex="-1"></a>  user_id NULLABLE, anon_id NULLABLE, listing_id NULLABLE, seller_id NULLABLE,</span>
+<span id="cb1-87"><a href="#cb1-87" aria-hidden="true" tabindex="-1"></a>  props_jsonb</span>
+<span id="cb1-88"><a href="#cb1-88" aria-hidden="true" tabindex="-1"></a>)  <span class="co">-- partitioned by month if volume grows; rollup tables for admin charts</span></span>
+<span id="cb1-89"><a href="#cb1-89" aria-hidden="true" tabindex="-1"></a>admin_audit_log (<span class="kw">id</span>, admin_id FK, action, entity_type, entity_id, before_jsonb, after_jsonb, created_at)</span>
+<span id="cb1-90"><a href="#cb1-90" aria-hidden="true" tabindex="-1"></a>flags (<span class="kw">id</span>, <span class="kw">key</span> <span class="kw">UNIQUE</span>, enabled BOOL, payload_jsonb)   <span class="co">-- feature flags</span></span>
+<span id="cb1-91"><a href="#cb1-91" aria-hidden="true" tabindex="-1"></a>listing_reports (<span class="kw">id</span>, listing_id FK, reporter_id NULLABLE, reason, detail, status ENUM(<span class="st">&#39;open&#39;</span>,<span class="st">&#39;resolved&#39;</span>,<span class="st">&#39;dismissed&#39;</span>))</span></code></pre></div>
+<p>Notes:</p>
+<ul>
+<li>Denormalized counters on <code>listings</code> updated
+transactionally (or via triggers) keep browse pages cheap.</li>
+<li><code>leads.seller_id</code> denormalization is deliberate: the
+seller lead inbox is the hottest seller query.</li>
+<li>Everything needed for PostGIS later (lat/lng) exists now; adding
+<code>GEOGRAPHY(Point)</code> + GiST index is a single additive
+migration.</li>
+</ul>
+<hr />
+<h2 id="7-api-surface-app-router-route-handlers--server-actions">7. API
+Surface (App Router route handlers / server actions)</h2>
+<p>Public:</p>
+<ul>
+<li><code>GET /api/listings</code> (filters, cursor pagination) ·
+<code>GET /api/listings/[slug]</code></li>
+<li><code>POST /api/auth/*</code> (register, login, OTP send/verify,
+OAuth callbacks)</li>
+</ul>
+<p>Buyer (auth):</p>
+<ul>
+<li><code>POST /api/listings/[id]/leads</code> — create inquiry
+(rate-limited, captcha-checked, OTP-verified phone required)</li>
+<li><code>GET /api/me/inquiries</code> ·
+<code>GET/POST/PATCH/DELETE /api/me/lists</code> ·
+<code>PUT/DELETE /api/me/lists/[id]/items/[listingId]</code></li>
+<li><code>POST /api/me/seller-onboarding</code> (step save) ·
+<code>POST /api/me/seller-onboarding/submit</code></li>
+</ul>
+<p>Seller (role-gated):</p>
+<ul>
+<li><code>GET/POST /api/dashboard/listings</code> ·
+<code>PATCH/DELETE /api/dashboard/listings/[id]</code> ·
+<code>POST .../[id]/status</code></li>
+<li><code>POST /api/dashboard/media/presign</code> → presigned R2 URL;
+<code>POST /api/dashboard/media/complete</code> (register upload, kick
+transcode)</li>
+<li><code>GET /api/dashboard/leads</code> ·
+<code>PATCH /api/dashboard/leads/[id]</code> (status)</li>
+<li><code>GET /api/meta/oauth/start</code> → redirect;
+<code>GET /api/meta/oauth/callback</code>;
+<code>GET /api/meta/adaccounts</code>;
+<code>GET /api/meta/pixels</code>; <code>POST /api/meta/select</code>
+(ad_account+pixel); <code>POST /api/meta/test-event</code>;
+<code>DELETE /api/meta/connection</code></li>
+<li>Webhook: <code>POST /api/webhooks/mux</code> (video processing),
+<code>POST /api/webhooks/meta/deauthorize</code> (Meta requires a deauth
+callback URL — when a seller removes the app on Facebook, mark
+connection disconnected),
+<code>POST /api/webhooks/meta/data-deletion</code> (required by Meta
+platform policy).</li>
+</ul>
+<p>Admin (admin-gated):</p>
+<ul>
+<li><code>GET /api/admin/metrics/overview?period=</code> ·
+<code>GET /api/admin/metrics/timeseries?metric=&amp;period=</code></li>
+<li><code>GET /api/admin/users</code> +
+<code>PATCH /api/admin/users/[id]</code> (suspend, roles)</li>
+<li><code>GET /api/admin/listings?status=pending_review</code> +
+<code>POST /api/admin/listings/[id]/approve|reject|feature</code></li>
+<li><code>GET /api/admin/leads</code> ·
+<code>GET /api/admin/audit-log</code></li>
+</ul>
+<p>Cross-cutting: Zod validation on every input; consistent error
+envelope <code>{error: {code, message}}</code>; idempotency keys on lead
+creation and media completion.</p>
+<hr />
+<h2 id="8-tech-stack--architecture">8. Tech Stack &amp;
+Architecture</h2>
+<p>Chosen for: single-repo simplicity, first-class Railway support, and
+being a stack Claude Code builds extremely well.</p>
+<table>
+<thead>
+<tr class="header">
+<th>Layer</th>
+<th>Choice</th>
+<th>Rationale</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Framework</td>
+<td><strong>Next.js 15 (App Router, TypeScript)</strong> — one app
+serves public pages (SSR/ISR for SEO-critical listing pages),
+buyer/seller dashboards, admin, and API routes</td>
+<td>One deployable service; listing pages need SSR for SEO + OG tags +
+per-seller pixel injection</td>
+</tr>
+<tr class="even">
+<td>DB</td>
+<td><strong>PostgreSQL</strong> (Railway plugin) + <strong>Drizzle
+ORM</strong> (or Prisma)</td>
+<td>Relational fits marketplace data; Railway-native</td>
+</tr>
+<tr class="odd">
+<td>Cache/queue</td>
+<td><strong>Redis</strong> (Railway plugin) +
+<strong>BullMQ</strong></td>
+<td>CAPI dispatch, emails, transcode callbacks, token checks, listing
+expiry — all queued</td>
+</tr>
+<tr class="even">
+<td>Worker</td>
+<td>Second Railway service, same repo/image, start command
+<code>node worker.js</code></td>
+<td>Never run queues inside the web process — Railway restarts/deploys
+would drop jobs</td>
+</tr>
+<tr class="odd">
+<td>Object storage</td>
+<td><strong>Cloudflare R2</strong> (S3-compatible)</td>
+<td>Railway has no object storage; R2 has zero egress fees (media-heavy
+platform)</td>
+</tr>
+<tr class="even">
+<td>Video</td>
+<td><strong>Mux</strong> (or Cloudflare Stream)</td>
+<td>Transcoding, HLS, thumbnails, webhooks — never DIY ffmpeg in v1</td>
+</tr>
+<tr class="odd">
+<td>Images</td>
+<td><code>sharp</code> in worker → webp variants + blurhash; serve via
+R2 + Cloudflare CDN</td>
+<td>Cheap, standard</td>
+</tr>
+<tr class="even">
+<td>Auth</td>
+<td><strong>Better Auth</strong> (or Auth.js) with email/password, email
+OTP, phone OTP (Twilio Verify / MSG91 depending on market), Google
+OAuth</td>
+<td>Self-hosted = no per-MAU cost; phone OTP is required for lead
+quality anyway</td>
+</tr>
+<tr class="odd">
+<td>Email</td>
+<td><strong>Resend</strong> or Postmark, React Email templates</td>
+<td>Lead notifications are business-critical: use a transactional-grade
+provider, set up SPF/DKIM/DMARC day one</td>
+</tr>
+<tr class="even">
+<td>Maps</td>
+<td>Mapbox GL (or Google Maps if market dictates)</td>
+<td>Map pin picker + listing map embed</td>
+</tr>
+<tr class="odd">
+<td>Validation</td>
+<td>Zod everywhere (API + forms via react-hook-form)</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>UI</td>
+<td>Tailwind + shadcn/ui</td>
+<td>Fast, consistent, Claude-Code-friendly</td>
+</tr>
+<tr class="odd">
+<td>Monitoring</td>
+<td>Sentry (errors) + Railway logs; <code>/api/health</code>
+endpoint</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>Rate limiting</td>
+<td>Redis sliding window (per-IP + per-user) on auth, leads, media
+presign</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h3 id="81-railway-deployment-topology">8.1 Railway deployment
+topology</h3>
+<p>Services in one Railway project:</p>
+<ol type="1">
+<li><strong>web</strong> — Next.js (<code>next start</code>),
+healthcheck <code>/api/health</code>, min 1 replica (scale horizontally
+later; app must stay stateless — sessions in DB/Redis, uploads
+direct-to-R2).</li>
+<li><strong>worker</strong> — BullMQ consumers (emails, CAPI, media,
+token-check, expiry).</li>
+<li><strong>cron</strong> — Railway cron triggers hitting worker jobs
+(daily token health check, listing expiry sweep, analytics rollups) — or
+<code>repeatable</code> BullMQ jobs inside worker (simpler; pick
+this).</li>
+<li><strong>Postgres</strong> plugin, <strong>Redis</strong>
+plugin.</li>
+</ol>
+<p>Deploy pipeline:</p>
+<ul>
+<li>GitHub repo → Railway auto-deploy on <code>main</code>; PR preview
+environments enabled.</li>
+<li>Migrations: run <code>drizzle-kit migrate</code> as
+<strong>pre-deploy command</strong> (Railway supports this) so schema is
+migrated before new code serves traffic. Only
+additive/backwards-compatible migrations between deploys.</li>
+<li>Env vars (Railway service variables): <code>DATABASE_URL</code>,
+<code>REDIS_URL</code>, <code>R2_*</code>, <code>MUX_*</code>,
+<code>META_APP_ID</code>, <code>META_APP_SECRET</code>,
+<code>TOKEN_ENCRYPTION_KEY</code>, <code>RESEND_API_KEY</code>,
+<code>TWILIO_*</code>, <code>SENTRY_DSN</code>,
+<code>NEXT_PUBLIC_APP_URL</code>, <code>SESSION_SECRET</code>.</li>
+<li>Custom domain <code>ovyro.com</code> (+ <code>www</code> redirect)
+on the web service; HTTPS automatic. <strong>Meta OAuth redirect URIs
+and pixel domains must use the final production domain — set the custom
+domain before starting Meta App Review.</strong></li>
+<li>Environments: <code>production</code> + <code>staging</code>
+(separate Railway environment, separate Meta test app, separate
+DB).</li>
+</ul>
+<figure class="diagram"><svg viewBox="0 0 900 400" role="img" aria-label="Railway architecture"><defs><marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#5b6b7a"/></marker></defs><rect x="20" y="55" width="500" height="325" rx="16" fill="none" stroke="#1f6f54" stroke-width="2" stroke-dasharray="6 5"/><text x="40" y="82" font-family="Segoe UI, system-ui, sans-serif" font-size="13.5" font-weight="650" fill="#1f6f54">RAILWAY PROJECT</text><rect x="50" y="100" width="200" height="84" rx="10" fill="#fff" stroke="#1c2733" stroke-width="1.5"/><text x="150.0" y="122" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="14" font-weight="650" fill="#1c2733">web (Next.js)</text><text x="150.0" y="140" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="12" fill="#5b6b7a">SSR listing pages · APIs</text><text x="150.0" y="156" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="12" fill="#5b6b7a">dashboards · admin</text><text x="150.0" y="172" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="12" fill="#5b6b7a">healthcheck /api/health</text><rect x="50" y="215" width="200" height="84" rx="10" fill="#fff" stroke="#1c2733" stroke-width="1.5"/><text x="150.0" y="237" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="14" font-weight="650" fill="#1c2733">worker (BullMQ)</text><text x="150.0" y="255" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="12" fill="#5b6b7a">emails · CAPI dispatch</text><text x="150.0" y="271" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="12" fill="#5b6b7a">media processing</text><text x="150.0" y="287" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="12" fill="#5b6b7a">token checks · expiry · rollups</text><rect x="310" y="100" width="180" height="60" rx="10" fill="#f5f7f9" stroke="#c8d2da" stroke-width="1.5"/><text x="400.0" y="122" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="14" font-weight="650" fill="#1c2733">PostgreSQL</text><text x="400.0" y="140" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="12" fill="#5b6b7a">plugin</text><rect x="310" y="195" width="180" height="60" rx="10" fill="#f5f7f9" stroke="#c8d2da" stroke-width="1.5"/><text x="400.0" y="217" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="14" font-weight="650" fill="#1c2733">Redis</text><text x="400.0" y="235" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="12" fill="#5b6b7a">queue + rate limits</text><text x="270" y="335" font-family="Segoe UI, system-ui, sans-serif" font-size="11.5" fill="#5b6b7a">deploys: GitHub &#8594; main &#8594; pre-deploy migrations &#8594; zero-downtime</text><text x="270" y="352" font-family="Segoe UI, system-ui, sans-serif" font-size="11.5" fill="#5b6b7a">environments: production + staging (separate DB &amp; Meta test app)</text><line x1="252" y1="130" x2="308" y2="130" stroke="#5b6b7a" stroke-width="1.6" marker-end="url(#arr)"/><line x1="252" y1="225" x2="308" y2="225" stroke="#5b6b7a" stroke-width="1.6" marker-end="url(#arr)"/><line x1="150" y1="186" x2="150" y2="213" stroke="#5b6b7a" stroke-width="1.6" marker-end="url(#arr)"/><line x1="252" y1="150" x2="308" y2="208" stroke="#5b6b7a" stroke-width="1.6" marker-end="url(#arr)"/><rect x="610" y="40" width="260" height="66" rx="10" fill="#e9f1fb" stroke="#1d5fa7" stroke-width="1.5"/><text x="740.0" y="62" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="14" font-weight="650" fill="#1c2733">Cloudflare R2</text><text x="740.0" y="80" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="12" fill="#5b6b7a">media storage (presigned direct uploads)</text><rect x="610" y="128" width="260" height="66" rx="10" fill="#e9f1fb" stroke="#1d5fa7" stroke-width="1.5"/><text x="740.0" y="150" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="14" font-weight="650" fill="#1c2733">Mux</text><text x="740.0" y="168" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="12" fill="#5b6b7a">video transcode &#8594; HLS + webhook</text><rect x="610" y="216" width="260" height="66" rx="10" fill="#e9f1fb" stroke="#1d5fa7" stroke-width="1.5"/><text x="740.0" y="238" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="14" font-weight="650" fill="#1c2733">Meta Graph API</text><text x="740.0" y="256" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="12" fill="#5b6b7a">OAuth · Pixels · CAPI</text><rect x="610" y="304" width="260" height="66" rx="10" fill="#e9f1fb" stroke="#1d5fa7" stroke-width="1.5"/><text x="740.0" y="326" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="14" font-weight="650" fill="#1c2733">Resend / Twilio</text><text x="740.0" y="344" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="12" fill="#5b6b7a">email + phone OTP</text><line x1="522" y1="130" x2="608" y2="73" stroke="#5b6b7a" stroke-width="1.6" marker-end="url(#arr)"/><line x1="522" y1="260" x2="608" y2="160" stroke="#5b6b7a" stroke-width="1.6" marker-end="url(#arr)"/><line x1="522" y1="270" x2="608" y2="250" stroke="#5b6b7a" stroke-width="1.6" marker-end="url(#arr)"/><line x1="522" y1="285" x2="608" y2="330" stroke="#5b6b7a" stroke-width="1.6" marker-end="url(#arr)"/><rect x="50" y="5" width="200" height="38" rx="10" fill="#e8f3ee" stroke="#1f6f54" stroke-width="1.5"/><text x="150.0" y="29.0" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="12.5" font-weight="650" fill="#1c2733">Buyers · Sellers · Admin</text><line x1="150" y1="45" x2="150" y2="98" stroke="#5b6b7a" stroke-width="1.6" marker-end="url(#arr)"/></svg><figcaption>Figure 5 · Deployment topology: two stateless Railway services (web + worker) with Postgres and Redis plugins; media, video, Meta, and messaging are external managed services.</figcaption></figure>
+<h3 id="82-repo-structure-monorepo-lite-single-app">8.2 Repo structure
+(monorepo-lite, single app)</h3>
+<pre><code>/src
+  /app                    # Next.js App Router
+    /(public)             # home, /land, /land/[slug]
+    /(auth)               # login, register, otp
+    /account              # buyer area
+    /dashboard            # seller area
+    /admin                # admin area
+    /api                  # route handlers + webhooks
+  /components  /lib (db, auth, meta, r2, queue, analytics)  /emails
+/worker                   # BullMQ processors (shares /src/lib)
+/drizzle                  # migrations
+/scripts                  # seed.ts (admin user, demo data)</code></pre>
+<hr />
+<h2 id="9-notifications">9. Notifications</h2>
+<table>
+<thead>
+<tr class="header">
+<th>Trigger</th>
+<th>Channel(s)</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>New lead</td>
+<td>Email to seller (immediate) + in-app inbox badge</td>
+<td>The core product event. Include full lead details in email. Retry
+queue; <code>email_delivered_at</code> recorded.</td>
+</tr>
+<tr class="even">
+<td>Lead confirmation</td>
+<td>Email to buyer</td>
+<td>Sets expectations ("seller typically responds in X").</td>
+</tr>
+<tr class="odd">
+<td>Listing approved/rejected</td>
+<td>Email to seller</td>
+<td>Rejection includes reason.</td>
+</tr>
+<tr class="even">
+<td>Listing expiring (T-7d, T-1d)</td>
+<td>Email to seller</td>
+<td>One-click renew link.</td>
+</tr>
+<tr class="odd">
+<td>Meta connection needs re-auth</td>
+<td>Email + dashboard banner</td>
+<td>From daily token check.</td>
+</tr>
+<tr class="even">
+<td>Seller onboarding approved</td>
+<td>Email</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>Weekly seller digest (Phase 2)</td>
+<td>Email</td>
+<td>Views/saves/leads summary.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="10-analytics-implementation-admin-view">10. Analytics
+Implementation (Admin View)</h2>
+<p>Two layers:</p>
+<ol type="1">
+<li><strong>Product events</strong> → <code>analytics_events</code>
+table written server-side (listing_view is written on the SSR request
+with basic bot filtering; inquiry_started via a lightweight beacon
+endpoint; everything else on the server actions that already handle the
+mutation). No third-party analytics dependency for core admin metrics —
+the admin dashboard must work from Ovyro's own data.</li>
+<li><strong>Rollups</strong> → nightly job aggregates into
+<code>metrics_daily (date, metric, dimension, value)</code> so admin
+charts are instant. Overview cards query rollups + a small "today so
+far" live delta.</li>
+</ol>
+<p>Definitions (so numbers are unambiguous):</p>
+<ul>
+<li>"Buyers looking to buy" = users with ≥1 session in last 30d OR ≥1
+inquiry/save in last 90d (show both "registered total" and
+"active").</li>
+<li>"Sellers" = users with <code>seller</code> role; "active sellers" =
+≥1 active listing.</li>
+<li>"Meta-connected" = <code>meta_connections.status='active'</code>;
+"healthy" additionally requires <code>last_event_at</code> within
+7d.</li>
+<li>Funnel conversion = inquiries_submitted / listing_views,
+period-scoped.</li>
+</ul>
+<p>Optional (flagged): self-hosted PostHog later for behavioral
+deep-dives; not a v1 dependency.</p>
+<hr />
+<h2 id="11-risks-edge-cases--mitigations">11. Risks, Edge Cases &amp;
+Mitigations</h2>
+<p><strong>R-1. Fraudulent / disputed land listings (highest business
+risk).</strong> Land fraud (fake ownership, disputed titles,
+agricultural land sold as residential) is endemic. Mitigations: admin
+approval queue before any listing goes live (v1 default ON); "legal docs
+available" self-declaration surfaced on listing; report-listing button;
+prominent disclaimer on every listing + lead email ("Ovyro is a
+discovery platform; verify title independently before any payment");
+seller identity phone-verified, ID-doc upload behind a feature flag
+ready to enable; repeat-offender suspension tooling in admin.</p>
+<p><strong>R-2. Disintermediation.</strong> Buyers and sellers will
+transact off-platform — in a lead-gen model this is <em>fine</em> (the
+lead is the product). Do not build contact-hiding friction that degrades
+lead quality. Revisit only if monetization becomes per-transaction.</p>
+<p><strong>R-3. Junk/spam leads kill seller trust.</strong> Mitigations:
+phone OTP before first inquiry (mandatory), per-user and per-IP rate
+limits, honeypot + Turnstile, dedupe (one inquiry per listing per buyer
+per 72h), admin visibility into lead volumes per buyer, ban tooling.
+Seller-side "report spam lead" in Phase 2.</p>
+<p><strong>R-4. Seller-pixel cross-contamination.</strong> Firing the
+wrong seller's pixel = data leakage between competitors and a trust
+catastrophe. Mitigations: single code path for pixel injection (§5.2),
+unit test asserting listing page HTML contains exactly the owner's
+pixel_id and no other connection's, e2e test with two seeded
+sellers.</p>
+<p><strong>R-5. Meta token/permission fragility.</strong> Covered in
+§5.4 — token check job, needs_reauth state, pixel keeps firing without
+token, CAPI queue with retries, seller status panel.</p>
+<p><strong>R-6. Meta App Review / Business Verification delays
+(weeks–months).</strong> Mitigations: start verification at project
+kickoff; whole Meta module behind a feature flag; dev mode works for
+internal test sellers meanwhile; launch does not block on it.</p>
+<p><strong>R-7. Large media uploads on Railway.</strong> Containers have
+limited disk and request-size tolerance. Mitigation: presigned
+direct-to-R2 uploads only; worker downloads for processing to a temp dir
+with size guards; Mux handles video entirely (pull from R2 URL).</p>
+<p><strong>R-8. SEO + ad landing page performance.</strong> Meta ad
+costs rise with slow pages. Mitigations: SSR + edge-cached listing pages
+(ISR revalidate on listing update), responsive webp images, LCP budget
+&lt; 2.5s on 4G, OG image auto-generated per listing.</p>
+<p><strong>R-9. Duplicate accounts / seller inquiring on own listing via
+second account.</strong> Self-inquiry blocked by user id; duplicate
+detection via phone number uniqueness (one verified phone → one
+account).</p>
+<p><strong>R-10. GDPR/DPDP-style privacy obligations.</strong> Consent
+checkbox on lead form (stored with timestamp), cookie consent gating
+pixels, account deletion flow (anonymize user, retain leads with contact
+redacted after retention window), Meta-required data-deletion callback
+implemented, privacy policy + seller terms pages as real routes.</p>
+<p><strong>R-11. Buyer→seller upgrade edge cases.</strong> User
+mid-onboarding must keep full buyer functionality; abandoning onboarding
+is resumable; rejection doesn't affect buyer role; a suspended seller
+keeps buyer access unless account-level suspended.</p>
+<p><strong>R-12. Data integrity for "sold" listings.</strong>
+Sold/removed listings stay resolvable (greyed-out state) for lists and
+inquiry history — never hard-delete a listing with leads; use status +
+soft delete.</p>
+<hr />
+<h2 id="12-non-functional-requirements">12. Non-Functional
+Requirements</h2>
+<ul>
+<li><strong>Security:</strong> OWASP basics; all mutations
+CSRF-protected (same-site cookies + framework protections); RBAC
+middleware on <code>/dashboard</code>, <code>/admin</code>, and every
+API route; encrypted Meta tokens; secrets only in Railway env;
+dependency audit in CI.</li>
+<li><strong>Performance:</strong> listing browse P95 &lt; 500ms server
+time; listing page LCP &lt; 2.5s; lead submit P95 &lt; 800ms (Meta CAPI
+is async, never inline).</li>
+<li><strong>Availability:</strong> single-region acceptable in v1;
+healthchecks + Railway restart policy; queue-backed side effects mean a
+worker outage delays (not loses) emails/CAPI.</li>
+<li><strong>Testing:</strong> unit (lib logic, pixel-isolation test
+R-4), integration (API routes against test DB), one happy-path e2e per
+role (Playwright): buyer inquiry flow, seller listing+lead flow, admin
+approve flow.</li>
+<li><strong>Accessibility:</strong> semantic forms, keyboard-navigable
+galleries, alt text prompts on media upload.</li>
+<li><strong>i18n-readiness:</strong> copy in a messages file even if
+single-language at launch; currency/area unit formatting
+centralized.</li>
+</ul>
+<hr />
+<h2 id="13-build-plan-phased-ordered-for-claude-code">13. Build Plan
+(Phased, ordered for Claude Code)</h2>
+<p><strong>Phase 0 — Foundation (repo bootstrap)</strong> Next.js + TS +
+Tailwind + shadcn; Drizzle + Postgres on Railway; Redis + BullMQ worker
+service; auth (email/password + email OTP + sessions + roles); seed
+script (admin user); health endpoint; Sentry; deploy pipeline with
+pre-deploy migrations; staging environment.</p>
+<p><strong>Phase 1 — Listings core</strong> Listing schema + CRUD wizard
+(seller dashboard shell); R2 presigned photo uploads + sharp processing;
+public browse/search + listing detail SSR page with SEO/OG; admin
+moderation queue + approve/reject emails; listing statuses &amp; expiry
+job.</p>
+<p><strong>Phase 2 — Buyer core</strong> Phone OTP verification; inquiry
+form + lead creation + rate limiting + captcha; seller lead email + lead
+inbox with status pipeline; buyer "My Inquiries"; lists/wishlist system
+(default + custom lists, save button, price_at_save); buyer profile.</p>
+<p><strong>Phase 3 — Seller onboarding &amp; role model polish</strong>
+Buyer→seller onboarding state machine + role switcher UI; seller profile
+settings; self-inquiry guard; per-listing stats.</p>
+<p><strong>Phase 4 — Meta integration</strong> (feature-flagged;
+parallel: App Review process runs from Phase 0) OAuth connect flow; ad
+account + pixel selection; pixel injection component + isolation tests;
+Lead/ViewContent/PageView events; CAPI queue with event_id dedup; token
+health job + needs_reauth flow; test-event tool; deauth + data-deletion
+webhooks; cookie-consent gating.</p>
+<p><strong>Phase 5 — Admin analytics &amp; ops</strong> analytics_events
+instrumentation; nightly rollups; admin overview + charts +
+users/listings/leads tables; audit log; feature-flag admin UI.</p>
+<p><strong>Phase 6 — Video + polish</strong> Mux video pipeline; weekly
+seller digest; map-radius search (PostGIS); AddToWishlist events;
+performance pass.</p>
+<p>Each phase ends deployed to staging with its e2e test green.
+Acceptance criteria for v1 launch = Phases 0–5 complete (video can
+trail).</p>
+<hr />
+<figure class="diagram"><svg viewBox="0 0 900 250" role="img" aria-label="Build phases"><defs><marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#5b6b7a"/></marker></defs><rect x="20" y="60" width="112" height="100" rx="10" fill="#f5f7f9" stroke="#c8d2da" stroke-width="1.5"/><text x="76" y="84" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="13" font-weight="700" fill="#1c2733">P0</text><text x="76" y="103" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="12" font-weight="650" fill="#1c2733">Foundation</text><text x="76" y="120" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="10.5" fill="#5b6b7a">auth</text><text x="76" y="134" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="10.5" fill="#5b6b7a">roles</text><text x="76" y="148" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="10.5" fill="#5b6b7a">DB</text><text x="76" y="162" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="10.5" fill="#5b6b7a">deploy</text><line x1="132" y1="110" x2="144" y2="110" stroke="#5b6b7a" stroke-width="1.6" marker-end="url(#arr)"/><rect x="144" y="60" width="112" height="100" rx="10" fill="#e8f3ee" stroke="#1f6f54" stroke-width="1.5"/><text x="200" y="84" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="13" font-weight="700" fill="#1c2733">P1</text><text x="200" y="103" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="12" font-weight="650" fill="#1c2733">Listings</text><text x="200" y="120" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="10.5" fill="#5b6b7a">CRUD</text><text x="200" y="134" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="10.5" fill="#5b6b7a">media</text><text x="200" y="148" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="10.5" fill="#5b6b7a">browse</text><text x="200" y="162" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="10.5" fill="#5b6b7a">moderation</text><line x1="256" y1="110" x2="268" y2="110" stroke="#5b6b7a" stroke-width="1.6" marker-end="url(#arr)"/><rect x="268" y="60" width="112" height="100" rx="10" fill="#e8f3ee" stroke="#1f6f54" stroke-width="1.5"/><text x="324" y="84" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="13" font-weight="700" fill="#1c2733">P2</text><text x="324" y="103" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="12" font-weight="650" fill="#1c2733">Buyer core</text><text x="324" y="120" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="10.5" fill="#5b6b7a">leads</text><text x="324" y="134" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="10.5" fill="#5b6b7a">OTP</text><text x="324" y="148" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="10.5" fill="#5b6b7a">lists</text><text x="324" y="162" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="10.5" fill="#5b6b7a">inbox</text><line x1="380" y1="110" x2="392" y2="110" stroke="#5b6b7a" stroke-width="1.6" marker-end="url(#arr)"/><rect x="392" y="60" width="112" height="100" rx="10" fill="#e8f3ee" stroke="#1f6f54" stroke-width="1.5"/><text x="448" y="84" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="13" font-weight="700" fill="#1c2733">P3</text><text x="448" y="103" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="12" font-weight="650" fill="#1c2733">Seller onboarding</text><text x="448" y="120" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="10.5" fill="#5b6b7a">upgrade flow</text><text x="448" y="134" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="10.5" fill="#5b6b7a">role switcher</text><line x1="504" y1="110" x2="516" y2="110" stroke="#5b6b7a" stroke-width="1.6" marker-end="url(#arr)"/><rect x="516" y="60" width="112" height="100" rx="10" fill="#e9f1fb" stroke="#1d5fa7" stroke-width="1.5"/><text x="572" y="84" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="13" font-weight="700" fill="#1c2733">P4</text><text x="572" y="103" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="12" font-weight="650" fill="#1c2733">Meta integration</text><text x="572" y="120" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="10.5" fill="#5b6b7a">pixel</text><text x="572" y="134" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="10.5" fill="#5b6b7a">CAPI</text><text x="572" y="148" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="10.5" fill="#5b6b7a">token health</text><line x1="628" y1="110" x2="640" y2="110" stroke="#5b6b7a" stroke-width="1.6" marker-end="url(#arr)"/><rect x="640" y="60" width="112" height="100" rx="10" fill="#fff4e0" stroke="#b45309" stroke-width="1.5"/><text x="696" y="84" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="13" font-weight="700" fill="#1c2733">P5</text><text x="696" y="103" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="12" font-weight="650" fill="#1c2733">Admin analytics</text><text x="696" y="120" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="10.5" fill="#5b6b7a">events</text><text x="696" y="134" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="10.5" fill="#5b6b7a">rollups</text><text x="696" y="148" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="10.5" fill="#5b6b7a">dashboards</text><line x1="752" y1="110" x2="764" y2="110" stroke="#5b6b7a" stroke-width="1.6" marker-end="url(#arr)"/><rect x="764" y="60" width="112" height="100" rx="10" fill="#fff" stroke="#c8d2da" stroke-width="1.5"/><text x="820" y="84" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="13" font-weight="700" fill="#1c2733">P6</text><text x="820" y="103" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="12" font-weight="650" fill="#1c2733">Video + polish</text><text x="820" y="120" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="10.5" fill="#5b6b7a">Mux</text><text x="820" y="134" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="10.5" fill="#5b6b7a">PostGIS</text><text x="820" y="148" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="10.5" fill="#5b6b7a">digests</text><rect x="20" y="185" width="600" height="34" rx="8" fill="#e9f1fb" stroke="#1d5fa7" stroke-width="1.2"/><text x="320" y="207" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="12" fill="#1d5fa7">Meta App Review + Business Verification runs in parallel from day one (takes weeks) — P4 is feature-flagged</text><line x1="620" y1="202" x2="700" y2="175" stroke="#1d5fa7" stroke-width="1.6" marker-end="url(#arr)" stroke-dasharray="4 3"/><rect x="640" y="185" width="240" height="34" rx="8" fill="#e8f3ee" stroke="#1f6f54" stroke-width="1.2"/><text x="760" y="207" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="12" fill="#1f6f54">v1 launch = P0&#8211;P5 &#10003; (video can trail)</text><text x="450" y="40" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="12.5" fill="#5b6b7a">Each phase ends deployed to staging with its e2e test green</text></svg><figcaption>Figure 6 · Phased build order for Claude Code. Phases are sequential and independently deployable; the Meta review process runs in parallel so launch never blocks on it.</figcaption></figure>
+<h2 id="14-v1-acceptance-checklist">14. v1 Acceptance Checklist</h2>
+<ul class="task-list">
+<li><label><input type="checkbox" />Buyer can register, verify phone,
+browse, filter, save to custom lists, and submit an inquiry with an
+offer amount.</label></li>
+<li><label><input type="checkbox" />That inquiry appears in the seller's
+inbox AND arrives by email within 60s, and appears in buyer's "My
+Inquiries."</label></li>
+<li><label><input type="checkbox" />Seller signup grants buyer view
+automatically; buyer can complete onboarding and gain seller dashboard;
+role switcher works.</label></li>
+<li><label><input type="checkbox" />Seller can create a listing with ≥1
+photo; it enters pending_review; admin approves; page is publicly
+reachable at a clean slug with correct OG tags.</label></li>
+<li><label><input type="checkbox" />Seller with Meta connected: their
+pixel (and only theirs) fires on their listing page; submitting a test
+inquiry produces a deduplicated Lead event visible in Meta Events
+Manager (pixel + CAPI, same event_id).</label></li>
+<li><label><input type="checkbox" />Disconnecting Meta stops injection;
+expired token flips connection to needs_reauth and emails the
+seller.</label></li>
+<li><label><input type="checkbox" />Admin dashboard shows: buyer count,
+seller count, Meta-connected seller count (with "healthy" split), active
+listings, leads in period, and views→leads funnel — numbers reconcile
+with raw tables.</label></li>
+<li><label><input type="checkbox" />Seller cannot inquire on own
+listing; rate limits block a 20-inquiry burst; suspended user cannot log
+in.</label></li>
+<li><label><input type="checkbox" />App deploys on Railway from
+<code>main</code> with zero-downtime migration; staging environment
+isolated.</label></li>
+</ul>
+<hr />
+<p><em>End of spec. Recommended next step: hand this file to Claude Code
+with the instruction "Implement Phase 0 of ovyro-spec.md," and proceed
+phase by phase.</em></p>
+
+</div>
+</body>
+</html>
