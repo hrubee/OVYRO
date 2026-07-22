@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { RoleSwitcher } from "@/components/nav/role-switcher";
 import { requireAccountActor } from "./_lib/data";
 import { AccountNav } from "./_components/account-nav";
 import { SignOutButton } from "./_components/sign-out-button";
@@ -23,6 +24,7 @@ export default async function AccountLayout({
             Ovyro
           </Link>
           <div className="flex items-center gap-3">
+            <RoleSwitcher />
             <Link
               href="/land"
               className="text-sm text-muted-foreground hover:text-foreground"
