@@ -12,6 +12,7 @@ domains:
   buyer-account: {}
   onboarding: {}
   meta: {}
+  analytics: {}
 governance:
   max_entries: 100
   warn_entries: 150
