@@ -13,6 +13,7 @@
     "db:migrate": "drizzle-kit migrate",
     "seed": "bun run scripts/seed.ts",
     "seed:demo": "bun run scripts/seed-demo.ts",
+    "seed:dev": "bun run scripts/seed-dev-users.ts",
     "worker": "bun run worker/index.ts"
   },
   "dependencies": {
