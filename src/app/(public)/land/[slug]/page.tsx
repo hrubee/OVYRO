@@ -13,6 +13,7 @@ import {
   listingUrl,
   type PublicListingDetail,
 } from "@/lib/search";
+import { PixelMount } from "@/components/meta/pixel-mount";
 import { ListingGallery } from "./_components/gallery";
 import { InquiryMountPoint, SaveMountPoint } from "./_components/mount-points";
 
@@ -106,6 +107,16 @@ export default async function ListingDetailPage({ params }: { params: Params }) 
 
   return (
     <>
+      {/* The one place a seller's pixel may fire — only the owner's, only after
+          consent (spec §5.2, R-4). No-ops when the owner has no pixel. */}
+      <PixelMount
+        listing={{
+          id: listing.id,
+          sellerId: listing.sellerId,
+          price: listing.price,
+          currency: listing.currency,
+        }}
+      />
       <main className="mx-auto max-w-6xl px-4 py-6">
         <nav className="mb-4 text-sm">
           <Link href="/land" className="text-muted-foreground hover:text-foreground">

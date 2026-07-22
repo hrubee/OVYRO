@@ -119,8 +119,11 @@ export async function InquiryPanel({ listing }: { listing: InquiryPanelListing }
   return (
     <InquiryForm
       listing={{
+        id: listing.id,
         slug: listing.slug,
         negotiable: listing.negotiable,
+        price: listing.price,
+        currency: listing.currency,
         listedPriceText: formatPrice(listing.price, listing.currency),
       }}
       prefill={{
