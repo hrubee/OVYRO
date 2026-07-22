@@ -1,7 +1,7 @@
 "use client";
 
 import Script from "next/script";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { trackLead } from "@/components/meta/fbq";
 import { contentParams } from "@/components/meta/pixel-logic";
 import { Button } from "@/components/ui/button";
@@ -63,6 +63,34 @@ export function InquiryForm({ listing, prefill, turnstileSiteKey }: InquiryFormP
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState(false);
+
+  // Funnel step `inquiry_started` (spec §10): the form is now shown to a
+  // qualified buyer (the server panel already gated auth + phone verification).
+  // Fire-and-forget via the analytics beacon so it never delays or blocks the
+  // form, and swallow everything — analytics must never break the inquiry flow.
+  useEffect(() => {
+    const body = JSON.stringify({
+      event: "inquiry_started",
+      listingId: listing.id,
+    });
+    try {
+      if (typeof navigator !== "undefined" && navigator.sendBeacon) {
+        navigator.sendBeacon(
+          "/api/analytics/beacon",
+          new Blob([body], { type: "application/json" }),
+        );
+      } else {
+        void fetch("/api/analytics/beacon", {
+          method: "POST",
+          body,
+          headers: { "content-type": "application/json" },
+          keepalive: true,
+        });
+      }
+    } catch {
+      // ignore — a missed analytics beacon must not affect the buyer.
+    }
+  }, [listing.id]);
 
   function resetCaptcha() {
     const turnstile = (window as unknown as { turnstile?: { reset?: () => void } })

@@ -195,48 +195,78 @@ export async function deleteList(
 }
 
 /**
- * Add a listing to a list, snapshotting its current price. Idempotent — a repeat
- * save returns the existing row rather than duplicating. `null` when the listing
- * does not exist or was removed (→ 404).
+ * Add a listing to a list, snapshotting its current price, and bump the
+ * listing's denormalized `save_count` in the same transaction (spec §6, task
+ * OVYRO-e58f). Idempotent — a repeat save to the *same list* returns the
+ * existing row and does **not** re-count, so `created` reports whether this call
+ * actually saved. `null` when the listing does not exist or was removed (→ 404).
+ *
+ * `save_count` is defined as the total number of `list_items` for the listing
+ * (the simpler, race-safe definition the task allows) — the direct analog of
+ * `view_count`/`lead_count`. Saving the same listing to two different lists
+ * counts twice by design; a same-list double-save counts once (idempotent).
  */
 export async function addItemToList(
   db: Db,
   listId: string,
   listingId: string,
-): Promise<ListItemRow | null> {
-  const [listing] = await db
-    .select({ price: listings.price })
-    .from(listings)
-    .where(and(eq(listings.id, listingId), isNull(listings.deletedAt)))
-    .limit(1);
-  if (!listing) return null;
+): Promise<{ item: ListItemRow; created: boolean } | null> {
+  return db.transaction(async (tx) => {
+    const [listing] = await tx
+      .select({ price: listings.price })
+      .from(listings)
+      .where(and(eq(listings.id, listingId), isNull(listings.deletedAt)))
+      .limit(1);
+    if (!listing) return null;
 
-  const [inserted] = await db
-    .insert(listItems)
-    .values({ listId, listingId, priceAtSave: listing.price })
-    .onConflictDoNothing()
-    .returning();
-  if (inserted) return inserted;
+    const [inserted] = await tx
+      .insert(listItems)
+      .values({ listId, listingId, priceAtSave: listing.price })
+      .onConflictDoNothing()
+      .returning();
 
-  const [existing] = await db
-    .select()
-    .from(listItems)
-    .where(and(eq(listItems.listId, listId), eq(listItems.listingId, listingId)))
-    .limit(1);
-  return existing ?? null;
+    if (inserted) {
+      // Raw SQL like `incrementListingView`: a save is not a content edit, so it
+      // must not trip `listings.updated_at` and needlessly bust the R-8 cache.
+      await tx.execute(
+        sql`update ${listings} set save_count = save_count + 1 where id = ${listingId}`,
+      );
+      return { item: inserted, created: true };
+    }
+
+    const [existing] = await tx
+      .select()
+      .from(listItems)
+      .where(and(eq(listItems.listId, listId), eq(listItems.listingId, listingId)))
+      .limit(1);
+    return existing ? { item: existing, created: false } : null;
+  });
 }
 
-/** Remove a listing from a list. `true` when a row was actually deleted. */
+/**
+ * Remove a listing from a list, decrementing `save_count` in step with the add
+ * path (transactional, spec §6). `true` when a row was actually deleted.
+ * `GREATEST(..., 0)` guards against underflow from `list_items` that predate the
+ * counter being instrumented.
+ */
 export async function removeItemFromList(
   db: Db,
   listId: string,
   listingId: string,
 ): Promise<boolean> {
-  const rows = await db
-    .delete(listItems)
-    .where(and(eq(listItems.listId, listId), eq(listItems.listingId, listingId)))
-    .returning({ id: listItems.id });
-  return rows.length > 0;
+  return db.transaction(async (tx) => {
+    const rows = await tx
+      .delete(listItems)
+      .where(and(eq(listItems.listId, listId), eq(listItems.listingId, listingId)))
+      .returning({ id: listItems.id });
+
+    if (rows.length > 0) {
+      await tx.execute(
+        sql`update ${listings} set save_count = greatest(save_count - 1, 0) where id = ${listingId}`,
+      );
+    }
+    return rows.length > 0;
+  });
 }
 
 /** Which of the user's lists already hold `listingId` (drives the save UI). */

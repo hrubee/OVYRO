@@ -11,6 +11,7 @@
  * is idempotent, so a double-save is a no-op that still reports success.
  */
 import type { NextRequest } from "next/server";
+import { trackSave } from "@/lib/analytics";
 import { requireActor } from "@/lib/auth/session";
 import { db } from "@/lib/db";
 import {
@@ -30,8 +31,16 @@ export async function PUT(_req: NextRequest, { params }: Params) {
     const list = await resolveListForWrite(db, actor.userId, id);
     if (!list) throw new NotFoundError("That list doesn't exist.");
 
-    const item = await addItemToList(db, list.id, listingId);
-    if (!item) throw new NotFoundError("That listing is no longer available.");
+    const result = await addItemToList(db, list.id, listingId);
+    if (!result) throw new NotFoundError("That listing is no longer available.");
+    const { item, created } = result;
+
+    // Funnel `save` event (spec §10) — only genuine first saves count, matching
+    // save_count; a repeat save to the same list is idempotent and silent.
+    // Best-effort: `trackSave` swallows its own write errors.
+    if (created) {
+      await trackSave({ listingId, userId: actor.userId });
+    }
 
     // Only the membership fact matters to the caller (it already has the
     // listing) — return the snapshot rather than re-resolving the listing.
