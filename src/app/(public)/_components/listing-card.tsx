@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { SaveButton } from "@/components/lists/save-button";
 import type { ListingSummary } from "@/lib/listings";
 import {
   formatArea,
@@ -28,13 +29,20 @@ export function ListingCard({
   const isList = layout === "list";
 
   return (
-    <Link
-      href={listingPath(listing.slug)}
-      className={cn(
-        "group flex overflow-hidden rounded-xl border bg-card text-card-foreground shadow-sm transition-shadow hover:shadow-md focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
-        isList ? "flex-col sm:flex-row" : "flex-col",
-      )}
-    >
+    <div className="relative">
+      {/* Save sits outside the card link so it never triggers navigation. */}
+      <SaveButton
+        listingId={listing.id}
+        variant="overlay"
+        className="absolute right-2 top-2 z-10"
+      />
+      <Link
+        href={listingPath(listing.slug)}
+        className={cn(
+          "group flex overflow-hidden rounded-xl border bg-card text-card-foreground shadow-sm transition-shadow hover:shadow-md focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
+          isList ? "flex-col sm:flex-row" : "flex-col",
+        )}
+      >
       <div
         className={cn(
           "relative shrink-0 overflow-hidden bg-muted",
@@ -72,6 +80,7 @@ export function ListingCard({
           <p className="truncate text-sm text-muted-foreground">{location}</p>
         )}
       </div>
-    </Link>
+      </Link>
+    </div>
   );
 }

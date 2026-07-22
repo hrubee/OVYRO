@@ -1,13 +1,14 @@
 import { Heart, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { SaveButton } from "@/components/lists/save-button";
 
 /**
  * Phase 2 mount points (spec §4.2.2 inquiry/negotiation, §4.2.3 saved lists).
  *
- * These are deliberately non-functional, clearly-labeled placeholders. The
- * landing-page layout is finalized now so it does not shift when the real
- * lead/inquiry form and saved-lists actions land in Phase 2 — which are owned
- * by other builders. DO NOT wire these to any endpoint here.
+ * The inquiry slot is still a placeholder owned by the submission builder — DO
+ * NOT wire it here. The save slot is now live: given a `listingId` it renders
+ * the real save-to-list control (auth-gated; anonymous users hit the signup
+ * wall). It degrades to the disabled placeholder if rendered without an id.
  */
 export function InquiryMountPoint({ negotiable }: { negotiable: boolean }) {
   return (
@@ -32,13 +33,17 @@ export function InquiryMountPoint({ negotiable }: { negotiable: boolean }) {
   );
 }
 
-export function SaveMountPoint() {
+export function SaveMountPoint({ listingId }: { listingId?: string }) {
   return (
-    <div className="flex gap-2">
-      {/* Phase 2: save-to-list + share actions wire up here. */}
-      <Button variant="outline" size="sm" disabled aria-label="Save listing" data-slot="save-button">
-        <Heart className="size-4" /> Save
-      </Button>
+    <div className="flex gap-2" data-slot="save-button">
+      {listingId ? (
+        <SaveButton listingId={listingId} variant="inline" />
+      ) : (
+        <Button variant="outline" size="sm" disabled aria-label="Save listing">
+          <Heart className="size-4" /> Save
+        </Button>
+      )}
+      {/* Share stays a placeholder — not part of the saved-lists scope. */}
       <Button variant="outline" size="sm" disabled aria-label="Share listing">
         <Share2 className="size-4" /> Share
       </Button>

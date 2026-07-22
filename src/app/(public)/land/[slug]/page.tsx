@@ -126,7 +126,7 @@ export default async function ListingDetailPage({ params }: { params: Params }) 
                   <p className="mt-1 text-muted-foreground">{location}</p>
                 )}
               </div>
-              <SaveMountPoint />
+              <SaveMountPoint listingId={listing.id} />
             </header>
 
             <section aria-label="Description">
