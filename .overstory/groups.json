@@ -1,0 +1,24 @@
+[
+	{
+		"id": "group-70cd68bd",
+		"name": "ovyro-v1-build",
+		"memberIssueIds": [
+			"OVYRO-34b8",
+			"OVYRO-133c",
+			"OVYRO-a421",
+			"OVYRO-cd02",
+			"OVYRO-5be5",
+			"OVYRO-93ac",
+			"OVYRO-9d5f",
+			"OVYRO-1042",
+			"OVYRO-261f",
+			"OVYRO-19f3",
+			"OVYRO-886b",
+			"OVYRO-d1dd",
+			"OVYRO-2553"
+		],
+		"status": "active",
+		"createdAt": "2026-07-21T17:20:26.918Z",
+		"completedAt": null
+	}
+]
