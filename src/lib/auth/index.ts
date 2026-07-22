@@ -1,7 +1,9 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import { APIError } from "better-auth/api";
 import { nextCookies } from "better-auth/next-js";
 import { emailOTP } from "better-auth/plugins/email-otp";
+import { eq } from "drizzle-orm";
 import { trackSignup } from "@/lib/analytics";
 import { db } from "@/lib/db";
 import { newId } from "@/lib/db/ids";
@@ -13,6 +15,11 @@ import {
   verifications,
 } from "@/lib/db/schema";
 import { sendOtpEmail } from "./otp-delivery";
+import {
+  SUSPENDED_SIGN_IN_CODE,
+  SUSPENDED_SIGN_IN_MESSAGE,
+  isLoginBlocked,
+} from "./suspension";
 
 /**
  * Better Auth over the spec §6 tables. Two things are load-bearing here:
@@ -90,6 +97,31 @@ export const auth = betterAuth({
           // Keep the auditable timestamp in step with Better Auth's boolean.
           if (user.emailVerified === true) {
             return { data: { ...user, emailVerifiedAt: new Date() } };
+          }
+        },
+      },
+    },
+    session: {
+      create: {
+        /**
+         * Suspended-cannot-login (spec §14). This fires for every sign-in path
+         * that mints a session — email/password, email OTP, and OAuth — so a
+         * `suspended` (or soft-deleted) account is rejected once, here, rather
+         * than per credential type. Throwing an `APIError` aborts the sign-in
+         * with a clean 403 instead of silently issuing no cookie.
+         */
+        before: async (session) => {
+          const [row] = await db
+            .select({ status: users.status })
+            .from(users)
+            .where(eq(users.id, session.userId))
+            .limit(1);
+
+          if (isLoginBlocked(row?.status)) {
+            throw new APIError("FORBIDDEN", {
+              code: SUSPENDED_SIGN_IN_CODE,
+              message: SUSPENDED_SIGN_IN_MESSAGE,
+            });
           }
         },
       },
