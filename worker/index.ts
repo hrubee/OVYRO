@@ -1,7 +1,7 @@
 import { Worker } from "bullmq";
 import { closeRedisConnection, getRedisConnection, getRedisUrl } from "@/lib/queue";
 import { describeError, logger } from "./logger";
-import { processors, registeredQueues } from "./processors";
+import { processors, registeredQueues, scheduleRepeatableJobs } from "./processors";
 
 /**
  * Ovyro worker service entrypoint (`bun run worker`).
@@ -58,6 +58,13 @@ export async function stopWorkers(workers: Worker[]): Promise<void> {
 
 function main(): void {
   const workers = startWorkers();
+
+  // Register repeatable jobs (e.g. the hourly listing-expiry sweep). Fire and
+  // forget — a scheduling hiccup must not stop the workers from draining jobs.
+  scheduleRepeatableJobs().catch((error: unknown) => {
+    logger.error("failed to schedule repeatable jobs", describeError(error));
+  });
+
   let shuttingDown = false;
 
   const shutdown = (signal: NodeJS.Signals) => {

@@ -57,7 +57,11 @@ describe.skipIf(!available)("worker drains the system queue", () => {
   });
 
   test("boots a worker for every registered queue", () => {
-    expect(workers.map((worker) => worker.name).sort()).toEqual(["email", "system"]);
+    expect(workers.map((worker) => worker.name).sort()).toEqual([
+      "email",
+      "listing-expiry",
+      "system",
+    ]);
   });
 
   test(
