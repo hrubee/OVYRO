@@ -6,3 +6,5 @@
  * the worker can import templates without importing anything web-specific.
  */
 export * from "./listing-moderation";
+export * from "./lead-notification";
+export * from "./inquiry-confirmation";
