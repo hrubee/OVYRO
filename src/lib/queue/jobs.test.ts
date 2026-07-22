@@ -9,6 +9,7 @@ describe("job registry", () => {
       "media-processing",
       "token-health",
       "listing-expiry",
+      "metrics-rollup",
       "system",
     ]);
   });
@@ -80,5 +81,25 @@ describe("parseJobPayload", () => {
 
   test("accepts the system echo job", () => {
     expect(parseJobPayload("system", "echo", { message: "ping" })).toEqual({ message: "ping" });
+  });
+
+  test("accepts a well-formed metrics-rollup rollup-day date", () => {
+    expect(parseJobPayload("metrics-rollup", "rollup-day", { date: "2026-07-22" })).toEqual({
+      date: "2026-07-22",
+    });
+  });
+
+  test("rejects a metrics-rollup date that is not YYYY-MM-DD", () => {
+    expect(() => parseJobPayload("metrics-rollup", "rollup-day", { date: "2026-7-2" })).toThrow();
+    expect(() => parseJobPayload("metrics-rollup", "rollup-day", { date: "not-a-date" })).toThrow();
+  });
+
+  test("accepts a metrics-rollup backfill range", () => {
+    expect(
+      parseJobPayload("metrics-rollup", "backfill", {
+        start: "2026-07-01",
+        end: "2026-07-31",
+      }),
+    ).toEqual({ start: "2026-07-01", end: "2026-07-31" });
   });
 });

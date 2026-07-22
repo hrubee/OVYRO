@@ -61,6 +61,7 @@ describe.skipIf(!available)("worker drains the system queue", () => {
       "email",
       "listing-expiry",
       "media-processing",
+      "metrics-rollup",
       "system",
     ]);
   });

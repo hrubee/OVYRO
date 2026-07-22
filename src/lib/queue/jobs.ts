@@ -71,6 +71,21 @@ export const jobSchemas = {
     sweep: z.object({}),
   },
 
+  /** Nightly rollup of `analytics_events` into `metrics_daily` (spec §10). */
+  "metrics-rollup": {
+    /** Roll up one UTC day — idempotent upsert on (date, metric, dimension). */
+    "rollup-day": z.object({
+      date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "expected YYYY-MM-DD"),
+    }),
+    /** Manual backfill: fan out a `rollup-day` per day in [start, end] inclusive. */
+    backfill: z.object({
+      start: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "expected YYYY-MM-DD"),
+      end: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "expected YYYY-MM-DD"),
+    }),
+    /** Repeatable nightly tick: rolls up the just-completed UTC day. */
+    sweep: z.object({}),
+  },
+
   /** Infrastructure jobs — liveness probes and the end-to-end queue smoke test. */
   system: {
     echo: z.object({
