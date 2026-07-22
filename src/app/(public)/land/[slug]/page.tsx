@@ -191,7 +191,7 @@ export default async function ListingDetailPage({ params }: { params: Params }) 
               </p>
             </div>
 
-            <InquiryMountPoint negotiable={listing.negotiable} />
+            <InquiryMountPoint listing={listing} />
           </aside>
         </div>
       </main>
