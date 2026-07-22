@@ -1,5 +1,5 @@
 /**
- * POST /api/listings/[id]/leads — create an inquiry / negotiation lead (spec §7, §4.2.2).
+ * POST /api/listings/[slug]/leads — create an inquiry / negotiation lead (spec §7, §4.2.2).
  *
  * The full anti-abuse + eligibility pipeline, in order:
  *   1. authentication — buyer experience is "is authenticated", never a role check,
@@ -37,22 +37,22 @@ export const dynamic = "force-dynamic";
 
 export async function POST(
   request: Request,
-  { params }: { params: Promise<{ id: string }> },
+  { params }: { params: Promise<{ slug: string }> },
 ) {
   try {
     const actor = await requireActor(); // 401 when anonymous
-    const { id } = await params;
+    const { slug } = await params;
 
     const ip = getClientIp(request.headers);
     const ua = getClientUa(request.headers);
 
     // Anti-abuse gate first, to shield the DB from spam bursts (spec §12).
-    await enforceInquiryRateLimits({ ip, userId: actor.userId, listingId: id });
+    await enforceInquiryRateLimits({ ip, userId: actor.userId, listingId: slug });
 
     const raw = await request.json().catch(() => null);
     const { inquiry, captchaToken } = parseSubmission(raw);
 
-    const listing = await loadActiveListing(id);
+    const listing = await loadActiveListing(slug);
     if (!listing) throw new NotFoundError();
 
     assertNotSelfInquiry(actor.userId, listing.sellerId);
