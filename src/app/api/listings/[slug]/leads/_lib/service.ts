@@ -46,12 +46,14 @@ export interface InquirerContact {
 }
 
 /**
- * Load an *active*, non-deleted listing by id, or `null`. Drafts, paused, sold,
- * pending, rejected, and expired listings are not inquirable — the public
- * landing page only exists for active listings.
+ * Load an *active*, non-deleted listing by slug, or `null`. Drafts, paused,
+ * sold, pending, rejected, and expired listings are not inquirable — the public
+ * landing page (also keyed by slug) only exists for active listings, so the
+ * inquiry POST at `/api/listings/[slug]/leads` resolves the same way the detail
+ * page does.
  */
 export async function loadActiveListing(
-  listingId: string,
+  slug: string,
 ): Promise<InquiryListing | null> {
   const [row] = await db
     .select({
@@ -65,7 +67,7 @@ export async function loadActiveListing(
     .from(listings)
     .where(
       and(
-        eq(listings.id, listingId),
+        eq(listings.slug, slug),
         eq(listings.status, "active"),
         isNull(listings.deletedAt),
       ),

@@ -119,7 +119,7 @@ export async function InquiryPanel({ listing }: { listing: InquiryPanelListing }
   return (
     <InquiryForm
       listing={{
-        id: listing.id,
+        slug: listing.slug,
         negotiable: listing.negotiable,
         listedPriceText: formatPrice(listing.price, listing.currency),
       }}

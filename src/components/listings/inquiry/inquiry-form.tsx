@@ -8,7 +8,8 @@ import { Label } from "@/components/ui/label";
 
 /** The listing an inquiry targets — only the public fields the form needs. */
 export interface InquiryFormListing {
-  id: string;
+  /** Public slug — the inquiry POSTs to `/api/listings/[slug]/leads`. */
+  slug: string;
   negotiable: boolean;
   /** Pre-formatted asking price (e.g. "₹12,00,000"), for the offer placeholder. */
   listedPriceText: string;
@@ -39,7 +40,7 @@ const PREFERRED_CONTACT_OPTIONS = [
 /**
  * Inquiry / negotiation form (spec §4.2.2). Rendered only for an authenticated,
  * phone-verified, non-owner buyer (the server panel gates that). Submits to
- * `POST /api/listings/[id]/leads`; offer is optional (blank = ask at listed
+ * `POST /api/listings/[slug]/leads`; offer is optional (blank = ask at listed
  * price), consent is mandatory, and a hidden honeypot + Turnstile widget back
  * the server-side anti-abuse checks.
  */
@@ -106,7 +107,7 @@ export function InquiryForm({ listing, prefill, turnstileSiteKey }: InquiryFormP
     setPending(true);
     let response: Response;
     try {
-      response = await fetch(`/api/listings/${listing.id}/leads`, {
+      response = await fetch(`/api/listings/${listing.slug}/leads`, {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify(body),
