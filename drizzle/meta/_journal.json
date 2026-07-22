@@ -8,6 +8,13 @@
       "when": 1784658037967,
       "tag": "0000_lovely_darkstar",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1784715998198,
+      "tag": "0001_complete_manta",
+      "breakpoints": true
     }
   ]
 }
