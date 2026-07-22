@@ -9,6 +9,7 @@ domains:
   media: {}
   project: {}
   leads: {}
+  buyer-account: {}
 governance:
   max_entries: 100
   warn_entries: 150
