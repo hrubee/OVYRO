@@ -2,15 +2,22 @@
 
 import Script from "next/script";
 import { useState } from "react";
+import { trackLead } from "@/components/meta/fbq";
+import { contentParams } from "@/components/meta/pixel-logic";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 /** The listing an inquiry targets — only the public fields the form needs. */
 export interface InquiryFormListing {
+  /** Listing id — the Meta `content_ids` for the Lead conversion. */
+  id: string;
   /** Public slug — the inquiry POSTs to `/api/listings/[slug]/leads`. */
   slug: string;
   negotiable: boolean;
+  /** Asking price + currency — the Meta Lead `value`/`currency`. */
+  price: number;
+  currency: string;
   /** Pre-formatted asking price (e.g. "₹12,00,000"), for the offer placeholder. */
   listedPriceText: string;
 }
@@ -121,6 +128,25 @@ export function InquiryForm({ listing, prefill, turnstileSiteKey }: InquiryFormP
     setPending(false);
 
     if (response.ok) {
+      // Fire the Meta Lead conversion (spec §5.3). No-ops unless the owner's
+      // pixel is active and the visitor accepted cookies. `metaEventId` is the
+      // server-minted de-dup key when the lead API surfaces it; otherwise Meta
+      // assigns its own id.
+      const data = (await response.json().catch(() => null)) as {
+        lead?: { metaEventId?: string };
+      } | null;
+      const eventId =
+        typeof data?.lead?.metaEventId === "string"
+          ? data.lead.metaEventId
+          : undefined;
+      trackLead(
+        contentParams({
+          listingId: listing.id,
+          value: listing.price,
+          currency: listing.currency,
+        }),
+        eventId,
+      );
       setDone(true);
       return;
     }

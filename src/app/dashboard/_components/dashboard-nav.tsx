@@ -8,6 +8,7 @@ const TABS = [
   { href: "/dashboard", label: "Overview", exact: true },
   { href: "/dashboard/listings", label: "Listings" },
   { href: "/dashboard/leads", label: "Leads" },
+  { href: "/dashboard/marketing", label: "Marketing" },
   { href: "/dashboard/settings", label: "Settings" },
 ];
 
