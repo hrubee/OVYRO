@@ -2,6 +2,7 @@ import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { nextCookies } from "better-auth/next-js";
 import { emailOTP } from "better-auth/plugins/email-otp";
+import { trackSignup } from "@/lib/analytics";
 import { db } from "@/lib/db";
 import { newId } from "@/lib/db/ids";
 import {
@@ -76,6 +77,12 @@ export const auth = betterAuth({
             .insert(userRoles)
             .values({ userId: user.id, role: "buyer" })
             .onConflictDoNothing();
+
+          // New-account funnel event (spec §10). Buyer is the default role at
+          // signup (seller is granted later via onboarding), so it is stamped
+          // into props for the rollup's buyer/seller split. Best-effort —
+          // `trackSignup` swallows its own write errors and never blocks signup.
+          await trackSignup({ userId: user.id, role: "buyer" });
         },
       },
       update: {

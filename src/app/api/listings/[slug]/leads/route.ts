@@ -14,6 +14,7 @@
  * Every error flows through `jsonError` into the spec §7 envelope.
  */
 import { NextResponse } from "next/server";
+import { trackInquirySubmitted } from "@/lib/analytics";
 import { requireActor } from "@/lib/auth/session";
 import { verifyCaptcha } from "@/lib/captcha";
 import { listingUrl } from "@/lib/email/templates";
@@ -74,6 +75,14 @@ export async function POST(
       inquiry,
       clientIp: ip,
       clientUa: ua,
+    });
+
+    // Funnel conversion event (spec §10) — best-effort; `track` swallows its own
+    // write errors so a committed lead can never be turned into a 500.
+    await trackInquirySubmitted({
+      listingId: listing.id,
+      sellerId: listing.sellerId,
+      userId: actor.userId,
     });
 
     const offerText =

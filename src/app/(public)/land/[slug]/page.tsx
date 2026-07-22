@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { cache } from "react";
+import { trackListingView } from "@/lib/analytics";
 import { db } from "@/lib/db";
 import {
   formatArea,
@@ -102,6 +104,16 @@ export default async function ListingDetailPage({ params }: { params: Params }) 
   } catch {
     // swallow: the listing still renders without the increment.
   }
+
+  // Funnel `listing_view` event (spec §10), written server-side with basic bot
+  // filtering off the request UA. `trackListingView` swallows its own write
+  // errors and drops obvious crawlers, so this can never break the page.
+  const requestHeaders = await headers();
+  await trackListingView({
+    listingId: listing.id,
+    sellerId: listing.sellerId,
+    userAgent: requestHeaders.get("user-agent"),
+  });
 
   const location = formatLocation(listing);
 
