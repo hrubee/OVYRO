@@ -3,6 +3,7 @@ import type { QueueName } from "@/lib/queue";
 import { processEmail } from "./email";
 import { processMediaProcessing } from "./media-processing";
 import { processListingExpiry, scheduleExpirySweep } from "./listing-expiry";
+import { processMetricsRollup, scheduleMetricsRollup } from "./metrics-rollup";
 import { processSystem } from "./system";
 
 export type Processor = (job: Job) => Promise<unknown>;
@@ -38,6 +39,13 @@ export const processors: Partial<Record<QueueName, ProcessorRegistration>> = {
     handler: processListingExpiry,
     concurrency: 3,
     schedule: scheduleExpirySweep,
+  },
+  // DB-bound aggregation; a backfill fans out one job per day. Keep concurrency
+  // modest so a wide backfill does not saturate the connection pool.
+  "metrics-rollup": {
+    handler: processMetricsRollup,
+    concurrency: 2,
+    schedule: scheduleMetricsRollup,
   },
 };
 
