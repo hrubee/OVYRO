@@ -60,6 +60,7 @@ describe.skipIf(!available)("worker drains the system queue", () => {
     expect(workers.map((worker) => worker.name).sort()).toEqual([
       "email",
       "listing-expiry",
+      "media-processing",
       "system",
     ]);
   });

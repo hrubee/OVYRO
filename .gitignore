@@ -29,3 +29,6 @@ next-env.d.ts
 
 # Sentry
 .sentryclirc
+
+# Local verification Postgres cluster (initdb data dir, socket, logs)
+.pg/
